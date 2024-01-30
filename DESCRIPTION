@@ -1,0 +1,18 @@
+Package: smooth.commutability
+Type: Package
+Title: Evaluation of Commutability using Smooting Splines
+Version: 1.0
+Date: 2023-11-15
+Author: Pernille Kjeilen Fauskanger
+Maintainer: Pernille Kjeilen Fauskanger <pernille.fauskanger@noklus.no>
+Description: Simplifies calculations related to the use of smoothing splines in evaluation of commutability of external quality assessment materials. 
+License: GPL (>= 2)
+Imports:
+    Rcpp (>= 1.0.11),
+    data.table,
+    splines,
+    fasteqa,
+Remotes: pernille267/fasteqa
+LinkingTo: Rcpp
+RoxygenNote: 7.2.3
+Encoding: UTF-8
