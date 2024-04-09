@@ -59,7 +59,7 @@ calculate_interior_knots <- function(x) {
 #' result <- smoothing_spline(data_example, df = 5)
 #' print(result$fitted)
 
-smoothing_spline <- function(data, df = NULL, lambda = NULL, df_max = 5){
+smoothing_spline <- function(data, df = NULL, lambda = NULL, df_max = 7.5){
 
   MP_B <- NULL
   cv_crit <- NA
@@ -99,6 +99,9 @@ smoothing_spline <- function(data, df = NULL, lambda = NULL, df_max = 5){
     lambda <- r * 256**(3 * nfold_cv_opt$minimum - 1)
     # If df0 exceeds the maximum allowable limit (i.e., df_max), obtain a new "lambda" based "df_max".
     df0 <- sum(diag(B %*% solve(BTB + lambda * Omega) %*% t(B)))
+    if(is.null(df_max)){
+      df_max <- length(orig_x)
+    }
     if(df0 > df_max){
       lambda <- to_lambda(df = df_max, B = B, BTB = BTB, Omega = Omega)
       cv_crit <- nfold_cv(lambda = lambda, y = y, B = B, BTB = BTB, Omega = Omega)
@@ -111,6 +114,7 @@ smoothing_spline <- function(data, df = NULL, lambda = NULL, df_max = 5){
   # "lambda" is missing, but "df" exists
   else if(!is.null(df) && is.null(lambda)){
     lambda <- to_lambda(df = df, B = B, BTB = BTB, Omega = Omega)
+    #lambda <- smooth.spline(x = data$MP_B, y = data$MP_A, df = df)$lambda
     cv_crit <- nfold_cv(lambda = lambda, y = y, B = B, BTB = BTB, Omega = Omega)
   }
 

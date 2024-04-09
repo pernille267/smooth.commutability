@@ -4,6 +4,7 @@
 #' @param new_data A \code{data.table}, \code{list} or \code{data.frame} object. Can include the ID column \code{SampleID} and the measurement column \code{MP_A}, but the measurement column \code{MP_B} is mandatory. External quality assessment (EQA) material measurements should be in here.
 #' @param df A optional \code{numeric} value greater than or equal to 2, but less than or equal to the number of clinical samples in \code{data}. If both \code{df} and \code{lambda} is set to \code{NULL}, n-fold cross-validation is used to obtain the optimal \code{df}.
 #' @param lambda A optional \code{numeric} value greater than 0. If both \code{df} and \code{lambda} is set to \code{NULL}, n-fold cross-validation is used to obtain the optimal \code{lambda}.
+#' @param df_max A \code{numeric} value between 2 and the number of clinical samples in \code{data}. If n-fold cross-validation is used to obtain the optimal effective number of degrees of freedom, what is its upper limit.
 #' @param R_ratio A \code{numeric} value indicating the ratio of replicates between that number \code{data} and that number \code{new_data} are based on. Only relevant if the number of replicates of \code{data} and \code{new_data} differs.
 #' @param level A \code{numeric} value representing the confidence level for the approximated prediction intervals. It should be between \code{0} and \code{1}. The default setting is \code{0.99}. Please adjust for simultaneous testing if pointwise prediction intervals are used for classifying more than one EQA material / reference material in the same IVD-MD comparison.
 #' @param rounding An \code{integer} specifying the desired decimal places for the predictions and prediction intervals. The default setting is three, offering sufficient precision. The maximum limit is twelve due to the utilization of double numbers.
@@ -15,10 +16,12 @@
 #'
 #' @examples print(1)
 
-predict_smoothing_spline <- function(data, new_data, df = NULL, lambda = NULL, R_ratio = 1, level = 0.99, rounding = 3L){
+predict_smoothing_spline <- function(data, new_data, df = NULL, lambda = NULL, df_max = 7.5, R_ratio = 1, level = 0.99, rounding = 3L){
 
   MP_B <- NULL
+
   # Validate 'data' input
+  #-----------------------------------------------------------------------------
   if (!is.data.table(new_data)) {
     if (!is.list(new_data) && !is.data.frame(new_data)) {
       stop("Oops, it seems like 'new_data' is having an identity crisis. It dreams of being a data.table, list, or data.frame, but alas, it is currently trapped in the body of a sad and confused ", class(new_data), ". Poor 'new_data', always searching for its true purpose, like a GPS with no sense of direction!")
@@ -37,7 +40,7 @@ predict_smoothing_spline <- function(data, new_data, df = NULL, lambda = NULL, R
   orig_nx <- new_data_clone$MP_B
 
   # Get relevant components from smoothing spline fit
-  smoothing_spline_fit <- smoothing_spline(data = data, df = df, lambda = lambda)
+  smoothing_spline_fit <- smoothing_spline(data = data, df = df, lambda = lambda, df_max = df_max)
   var_eps <- smoothing_spline_fit$var_eps
   cov_beta <- smoothing_spline_fit$cov_beta
   interior_knots <- smoothing_spline_fit$interior_knots

@@ -9,6 +9,7 @@ predict_smoothing_spline(
   new_data,
   df = NULL,
   lambda = NULL,
+  df_max = 7.5,
   R_ratio = 1,
   level = 0.99,
   rounding = 3L
@@ -22,6 +23,8 @@ predict_smoothing_spline(
 \item{df}{A optional \code{numeric} value greater than or equal to 2, but less than or equal to the number of clinical samples in \code{data}. If both \code{df} and \code{lambda} is set to \code{NULL}, n-fold cross-validation is used to obtain the optimal \code{df}.}
 
 \item{lambda}{A optional \code{numeric} value greater than 0. If both \code{df} and \code{lambda} is set to \code{NULL}, n-fold cross-validation is used to obtain the optimal \code{lambda}.}
+
+\item{df_max}{A \code{numeric} value between 2 and the number of clinical samples in \code{data}. If n-fold cross-validation is used to obtain the optimal effective number of degrees of freedom, what is its upper limit.}
 
 \item{R_ratio}{A \code{numeric} value indicating the ratio of replicates between that number \code{data} and that number \code{new_data} are based on. Only relevant if the number of replicates of \code{data} and \code{new_data} differs.}
 

@@ -4,7 +4,7 @@
 \alias{smoothing_spline}
 \title{Fit a Smoothing Spline Model with O'Sullivan Penalty}
 \usage{
-smoothing_spline(data, df = NULL, lambda = NULL, df_max = 5)
+smoothing_spline(data, df = NULL, lambda = NULL, df_max = 7.5)
 }
 \arguments{
 \item{data}{A \code{data.table}, \code{data.frame} or \code{list} containing the measurements.
