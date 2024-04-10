@@ -21,6 +21,9 @@ convert_to_data_table <- function(data){
 calculate_interior_knots <- function(x) {
   unique_x <- unique(x)
   n_interior_knots <- length(unique_x)
+  if(n_interior_knots >= 50){
+    n_interior_knots <- .nknots.smspl(n = n_interior_knots)
+  }
   interior_knots <- quantile(x = unique_x, probs = seq(from = 0, to = 1, length.out = n_interior_knots + 2))[-c(1, n_interior_knots + 2)]
   names(interior_knots) <- NULL
   return(interior_knots)
