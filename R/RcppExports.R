@@ -92,3 +92,31 @@ rcpp_hello_world <- function() {
     .Call(`_smooth_commutability_rcpp_hello_world`)
 }
 
+#' Simulate EQA data according to custom non-linear functions
+#'
+#' @title Simulate EQA data according to custom non-linear functions
+#' @name simulate_eqa_data_custom_cpp
+#'
+#' @param parameters A \code{list} containing the simulation parameters.
+#' @param type An \code{integer} value between 1 and 3. Which custom function should be simulated from.
+#' @param AR A non-missing \code{logical} value. Set to \code{TRUE} if all replicated measurements should be returned. Otherwise the mean of replicates are returned
+#'
+#' @description Simulates EQA data according to particular non-linear functions
+#'
+#' @details This function has no other use than in simulation studies.
+#'
+#' @return A \code{list} containing the simulated EQA data for the specified \code{type}.
+#'
+#' @examples \dontrun{
+#'
+#'   # Generate some fictional data
+#'   simulate_eqa_data_custom_cpp(list(n = 25, R = 3, cil = 2, ciu = 10,
+#'    cvx = 0.02, cvy = 0.03, cve = 0), type = 2, AR = FALSE)
+#'
+#' }
+NULL
+
+simulate_eqa_data_custom_cpp <- function(parameters, type = 1L, AR = FALSE) {
+    .Call(`_smooth_commutability_simulate_eqa_data_custom_cpp`, parameters, type, AR)
+}
+

@@ -12,6 +12,8 @@ Imports:
     data.table,
     splines,
     fasteqa,
+    pbapply,
+    parallel
 Remotes: pernille267/fasteqa
 LinkingTo: Rcpp
 RoxygenNote: 7.2.3

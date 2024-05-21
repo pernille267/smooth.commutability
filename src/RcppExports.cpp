@@ -63,12 +63,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// simulate_eqa_data_custom_cpp
+List simulate_eqa_data_custom_cpp(List parameters, int type, bool AR);
+RcppExport SEXP _smooth_commutability_simulate_eqa_data_custom_cpp(SEXP parametersSEXP, SEXP typeSEXP, SEXP ARSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type parameters(parametersSEXP);
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type AR(ARSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_eqa_data_custom_cpp(parameters, type, AR));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_smooth_commutability_bspline_basis", (DL_FUNC) &_smooth_commutability_bspline_basis, 4},
     {"_smooth_commutability_bspline_basis_matrix", (DL_FUNC) &_smooth_commutability_bspline_basis_matrix, 3},
     {"_smooth_commutability_df_2", (DL_FUNC) &_smooth_commutability_df_2, 6},
     {"_smooth_commutability_rcpp_hello_world", (DL_FUNC) &_smooth_commutability_rcpp_hello_world, 0},
+    {"_smooth_commutability_simulate_eqa_data_custom_cpp", (DL_FUNC) &_smooth_commutability_simulate_eqa_data_custom_cpp, 3},
     {NULL, NULL, 0}
 };
 
