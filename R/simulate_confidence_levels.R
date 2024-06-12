@@ -225,12 +225,13 @@ simulate_confidence_level <- function(N = 1e2L, n = 1, m = 1, parameters, level 
 #' @param calculate_sem A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}). If set to \code{TRUE}, standard error of the empirical confidence level(s) are calculated.
 #' @param percent A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}). If set to \code{TRUE}, all numbers that are possible to present as percentages are presented as percentages.
 #' @param parallel A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}). If set to \code{TRUE}, simulations are done on multiple cores on your local machine for the duration of the function call.
+#' @param max_cores An \code{integer} value between \code{2} and the number of cores you have on your computer. If you wish to use fewer cores than is on your computer, you should specify this here.
 #'
 #' @return A \code{data.table} with \code{n} rows, containing the \code{1:n} empirical confidence level estimates for the particular \code{parameters}.
 #' @export
 #'
 #' @examples print(1)
-simulate_confidence_levels <- function(N = 1e2L, n = 1, m = 1, parameters, level = 0.95, attach = TRUE, global_mean = FALSE, all_inside = FALSE, calculate_sem = TRUE, percent = FALSE, parallel = TRUE){
+simulate_confidence_levels <- function(N = 1e2L, n = 1, m = 1, parameters, level = 0.95, attach = TRUE, global_mean = FALSE, all_inside = FALSE, calculate_sem = TRUE, percent = FALSE, parallel = TRUE, max_cores = 25){
   parameters_list <- split(x = parameters, f = 1:nrow(parameters))
 
   if(isTRUE(parallel)){
@@ -251,7 +252,7 @@ simulate_confidence_levels <- function(N = 1e2L, n = 1, m = 1, parameters, level
     new_enviroment$simulate_inside_df_max <- simulate_inside_df_max
     new_enviroment$parameter_checks <- parameter_checks
 
-    cl <- makeCluster(detectCores() - 1)
+    cl <- makeCluster(min(detectCores() - 1, max_cores))
     on.exit(stopCluster(cl))
     clusterEvalQ(cl = cl, expr = {library(data.table);library(fasteqa)})
     clusterExport(cl = cl, varlist = c("N", "n", "m", "parameters_list", "level", "attach", "global_mean", "all_inside", "calculate_sem", "simulate_confidence_level", "simulate_insides", "simulate_inside", "simulate_inside_df", "simulate_inside_df_max", "parameter_checks"), envir = new_enviroment)
