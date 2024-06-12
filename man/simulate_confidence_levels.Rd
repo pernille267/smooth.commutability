@@ -15,7 +15,8 @@ simulate_confidence_levels(
   all_inside = FALSE,
   calculate_sem = TRUE,
   percent = FALSE,
-  parallel = TRUE
+  parallel = TRUE,
+  max_cores = 25
 )
 }
 \arguments{
@@ -44,6 +45,8 @@ of parameters accepted.}
 \item{percent}{A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}). If set to \code{TRUE}, all numbers that are possible to present as percentages are presented as percentages.}
 
 \item{parallel}{A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}). If set to \code{TRUE}, simulations are done on multiple cores on your local machine for the duration of the function call.}
+
+\item{max_cores}{An \code{integer} value between \code{2} and the number of cores you have on your computer. If you wish to use fewer cores than is on your computer, you should specify this here.}
 }
 \value{
 A \code{data.table} with \code{n} rows, containing the \code{1:n} empirical confidence level estimates for the particular \code{parameters}.
