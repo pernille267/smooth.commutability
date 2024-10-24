@@ -4,16 +4,24 @@
 \alias{estimate_zeta_ss}
 \title{Estimate \eqn{\zeta} using Smoothing Splines}
 \usage{
-estimate_zeta_ss(data, df = NULL, complex = TRUE, advice = FALSE)
+estimate_zeta_ss(
+  data,
+  df = NULL,
+  use_weights = FALSE,
+  simple_output = TRUE,
+  na_rm = TRUE
+)
 }
 \arguments{
 \item{data}{A \code{list} or \code{data.table} object. Must contain variables/columns \code{SampleID}, \code{ReplicateID}, \code{MP_A} and \code{MP_B}}
 
 \item{df}{A \code{double} between \code{2} and \code{n}, where \code{n} is the number of unique elements of \code{SampleID}. If \code{df} is set to 2 or smaller, ordinary least squares regression is used to estimate \eqn{\zeta}, because this estimate is more reliable in these cases.}
 
-\item{complex}{A \code{logical} value. Should the Delta method be used to approximate the variance of the f? If yes, set to \code{TRUE}.}
+\item{use_weights}{A \code{logical} value. If \code{TRUE}, weights are used to calculate \eqn{\zeta}. Weights are automatically determined.}
 
-\item{advice}{A \code{logical} value. Should a friendly piece of advice be delivered to you? Set to \code{TRUE} if you want this.}
+\item{simple_output}{A \code{logical} value. Set to \code{FALSE}, if all components of the zeta calculation is required.}
+
+\item{na_rm}{A \code{logical} value. Should NA values be removed before estimating zeta hat?}
 }
 \value{
 A \code{list} with one variable \code{zeta}, which is a double signifying the estimate of \eqn{\zeta}.

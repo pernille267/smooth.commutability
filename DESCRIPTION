@@ -10,11 +10,16 @@ License: GPL (>= 2)
 Imports:
     Rcpp (>= 1.0.11),
     data.table,
+    ggplot2,
     splines,
     fasteqa,
     pbapply,
-    parallel
+    parallel,
+    Matrix
 Remotes: pernille267/fasteqa
 LinkingTo: Rcpp
 RoxygenNote: 7.2.3
 Encoding: UTF-8
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

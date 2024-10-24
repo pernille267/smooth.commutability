@@ -7,39 +7,173 @@
 predict_smoothing_spline(
   data,
   new_data,
+  weight_data = NULL,
   df = NULL,
   lambda = NULL,
   df_max = 7.5,
   R_ratio = 1,
   level = 0.99,
+  simultaneous = FALSE,
+  negative_ok = TRUE,
+  attempt_fast = FALSE,
   rounding = 3L
 )
 }
 \arguments{
-\item{data}{A \code{data.table}, \code{list} or \code{data.frame} object. Should include the ID column \code{SampleID} and the measurement columns \code{MP_A} and \code{MP_B}. Clinical sample measurements should be in here.}
+\item{data}{A \code{data.table}, \code{list} or \code{data.frame} object.
+Should include the ID column \code{SampleID} and the measurement
+columns \code{MP_A} and \code{MP_B}.
+Clinical sample measurements should be in here.}
 
-\item{new_data}{A \code{data.table}, \code{list} or \code{data.frame} object. Can include the ID column \code{SampleID} and the measurement column \code{MP_A}, but the measurement column \code{MP_B} is mandatory. External quality assessment (EQA) material measurements should be in here.}
+\item{new_data}{A \code{data.table}, \code{list} or \code{data.frame} object.
+Can include the ID column \code{SampleID} and the measurement
+column \code{MP_A}, but the measurement column \code{MP_B} is mandatory.
+External quality assessment (EQA) material measurements should be in here.}
 
-\item{df}{A optional \code{numeric} value greater than or equal to 2, but less than or equal to the number of clinical samples in \code{data}. If both \code{df} and \code{lambda} is set to \code{NULL}, n-fold cross-validation is used to obtain the optimal \code{df}.}
+\item{weight_data}{A \code{data.table}, \code{list} or \code{data.frame} object.
+Must include the ID column \code{SampleID} and the weight columns
+\code{MP_A} and \code{MP_B}.
+The computational weights are given by 1 / (\code{MP_A} + \code{MP_B}).
+If set to \code{NULL}, no weights are used. See details for more information.}
 
-\item{lambda}{A optional \code{numeric} value greater than 0. If both \code{df} and \code{lambda} is set to \code{NULL}, n-fold cross-validation is used to obtain the optimal \code{lambda}.}
+\item{df}{A optional \code{numeric} value greater than or equal to 2,
+but less than or equal to the number of clinical samples in \code{data}.
+If both \code{df} and \code{lambda} is set to \code{NULL},
+n-fold cross-validation is used to obtain the optimal \code{df}.}
 
-\item{df_max}{A \code{numeric} value between 2 and the number of clinical samples in \code{data}. If n-fold cross-validation is used to obtain the optimal effective number of degrees of freedom, what is its upper limit.}
+\item{lambda}{A optional \code{numeric} value greater than 0.
+If both \code{df} and \code{lambda} is set to \code{NULL},
+n-fold cross-validation is used to obtain the optimal \code{lambda}.}
 
-\item{R_ratio}{A \code{numeric} value indicating the ratio of replicates between that number \code{data} and that number \code{new_data} are based on. Only relevant if the number of replicates of \code{data} and \code{new_data} differs.}
+\item{df_max}{A \code{numeric} value between 2 and the number of clinical samples in \code{data}.
+If n-fold cross-validation is used to obtain an optimal
+effective number of degrees of freedom. This value is
+capped at this upper limit.}
 
-\item{level}{A \code{numeric} value representing the confidence level for the approximated prediction intervals. It should be between \code{0} and \code{1}. The default setting is \code{0.99}. Please adjust for simultaneous testing if pointwise prediction intervals are used for classifying more than one EQA material / reference material in the same IVD-MD comparison.}
+\item{R_ratio}{A \code{numeric} value indicating the ratio of replicates between
+that number \code{data} and that number \code{new_data} are based on.
+Only relevant if the number of replicates of \code{data} and \code{new_data} differs.}
 
-\item{rounding}{An \code{integer} specifying the desired decimal places for the predictions and prediction intervals. The default setting is three, offering sufficient precision. The maximum limit is twelve due to the utilization of double numbers.}
+\item{level}{A \code{numeric} value representing the confidence level for the
+approximated prediction intervals. It should be between \code{0} and \code{1}.
+The default setting is \code{0.99}.}
+
+\item{simultaneous}{A \code{logical} value. If set to \code{TRUE},
+prediction intervals are Bonferroni-corrected.
+The default is set to \code{FALSE}.}
+
+\item{negative_ok}{A \code{logical} value. If set to \code{TRUE}, negative values are allowed.
+See details.}
+
+\item{attempt_fast}{A \code{logical} value. If \code{TRUE}, the predictions are attempted speeded up.}
+
+\item{rounding}{An \code{integer} specifying the desired decimal places for the
+predictions and prediction intervals. The default setting is \code{3L},
+offering sufficient precision. The maximum limit is twelve
+due to double precision.}
 }
 \value{
 A \code{data.table} object comprising approximated prediction interval data based on user inputs.
 }
 \description{
-Prediction Interval Estimation for External Quality Assessment Data via Smoothing Splines
+Predict and estimate prediction intervals based on new observations using
+smoothing splines.
 }
 \details{
-For optimal results, we recommended to include all \code{SampleID}, \code{MP_A}, and \code{MP_B} in \code{new_data} whenever possible. When constructing prediction bands, only \code{MP_B} should be available.
+Structure
+
+The input arguments, \code{data}, \code{new_data} and \code{weight_data} have
+rather strict requirements for them to be accepted as valid inputs. Here are
+the requirements for each of these three arguments.
+
+The argument \code{data} must be a \code{data.table}, \code{list} or \code{data.frame}
+with the following columns:
+\itemize{
+   \item \code{SampleID}: The sample identifiers for each sample in the dataset
+   \item \code{MP_A}: The measurements of the first IVD-MD in the IVD-MD comparison. Response variable.
+   \item \code{MP_B}: The measurements of the second IVD-MD in the IVD-MD comparison. Predictor variable.
+}
+
+The argument \code{new_data} must be a \code{data.table}, \code{list} or \code{data.frame}
+with the following columns:
+
+\itemize{
+   \item \code{SampleID}*: The sample identifiers for each sample in the dataset
+   \item \code{MP_A}*: The measurements of the first IVD-MD in the IVD-MD comparison. Actual response variable.
+   \item \code{MP_B}: The measurements of the second IVD-MD in the IVD-MD comparison. New predictor variable.
+}
+The columns \code{SampleID} and \code{MP_A} are optional, but required for
+calculation of \code{inside}.
+
+The argument \code{weight_data} can be \code{NULL}. Then no weights are used in prediction
+If the argument is something else than \code{NULL}, it must be a \code{data.table},
+\code{list} or \code{data.frame} with the following columns:
+\itemize{
+   \item \code{SampleID}: The sample identifiers for each sample in the dataset
+   \item \code{MP_A}: The weights of the first IVD-MD in the IVD-MD comparison.
+   \item \code{MP_B}: The weights of the second IVD-MD in the IVD-MD comparison
+}
+It is very important that \code{MP_A} + \code{MP_B} always is larger than zero.
+If not, an error is returned. Also the minimum of \code{MP_A} + \code{MP_B} should
+ideally not be smaller than 100 times smaller than the largest \code{MP_A} + \code{MP_B}.
+It is recommended to use \code{weight_function} on the \code{weight_data}
+to ensure that the latter is satisfied.
+
+Smoothing parameters
+
+The arguments \code{lambda}, \code{df} and \code{df_max} are meant to control
+the smoothness of the fitted smoothing spline. The two former, \code{lambda}
+and \code{df} are straight-forward. Here \code{lambda} is the computational
+smooting parameter and \code{df} is the effective number of degrees of freedom.
+There are four possibilities of combinations of \code{lambda} and \code{df}
+\itemize{
+   \item Both \code{lambda} and \code{df} are \code{NULL}. Then leave-one-out Cross-validation
+   is used to obtain an optimal value of \code{lambda}, and derive the corresponding
+   value of \code{df}
+   \item \code{lambda} is \code{NULL}, but \code{df} is given. Then, numerical optimization
+   is used to obtain the \code{lambda} that corresponds with the given \code{df}.
+   \item \code{lambda} is given, but \code{df} is \code{NULL}. Then no optimization
+   is necessary.
+   \item Both \code{lambda} and \code{df} are given. \code{df} is then ignored
+   and \code{lambda} is used.
+}
+If Both \code{lambda} and \code{df} are \code{NULL}. Then, \code{df_max} is
+used to control how large the optimal value of \code{df} can be based on
+leave-one-out Cross-validation. If the optimal value is larger than \code{df_max},
+this value is used in favor of the optimal. In such cases, numerical optimization
+is used to obtain the \code{lambda} that corresponds with the given \code{df_max}.
+
+Prediction interval estimation
+
+For the prediction interval estimation, the width of the estimated prediction
+intervals can be modified using \code{level}, \code{simultaneous} and \code{R_ratio}
+arguments.
+
+The former, \code{level}, controls the required confidence level
+of the estimated prediction intervals. This must of course be a value between \code{0}
+and \code{1}, but typical values are \code{0.90}, \code{0.95} and \code{0.99}.
+
+The \code{simultaneous} argument controls whether confidence levels should be
+Bonferroni-corrected for when estimating multiple prediction intervals at once. The
+effective point-wise confidence level for a particular value of \code{level}
+is given by \eqn{\mathrm{level}_{\mathrm{eff}} = 1 - (1 - \mathrm{level}) / m},
+where \code{m} is the number of joint prediction intervals.
+
+The \code{R_ratio} argument controls the ratio of the number of replicates used
+in \code{data} compared to what is used in \code{new_data}. If more replicates
+are used in \code{new_data} compared to \code{data}, the widths of the estimated
+prediction interval should be narrower.
+
+Negative results
+
+For standard measurement results, we do not expect them to be negative.
+Nevertheless, sometimes, the predictions and estimated prediction intervals
+may be negative. If you wish to cutoff negative results at \code{zero}, you
+can do this by setting \code{negative_ok} to \code{FALSE}.
+
+However, in some cases, you might expect negative results. For example,
+when data is log-transformed and some of the raw measurements are between
+\code{0} and \code{1}. In these cases, it might be favorable to set \code{negative_ok} to \code{TRUE}.
 }
 \examples{
 print(1)

@@ -4,16 +4,20 @@
 \alias{to_lambda}
 \title{Convert the desired effective degrees of freedom to the computational smoothing parameter lambda}
 \usage{
-to_lambda(df, B, BTB, Omega)
+to_lambda(df, weights, B, BTB, Omega, r = 1)
 }
 \arguments{
 \item{df}{A \code{double} that corresponds to the desired effective degrees of freedom for the smoothing spline model.}
+
+\item{weights}{A \code{numeric} vector sorted according to the order of the predictor \code{x}.}
 
 \item{B}{A B-spline basis \code{matrix} evaluated at the sorted and unique values of the predictor values, \code{x}.}
 
 \item{BTB}{A \code{matrix} that is the matrix product between the transpose of \code{B} and \code{B}.}
 
 \item{Omega}{The O'Sullivan penalty \code{matrix} for the B-spline basis.}
+
+\item{r}{The trace ratio of the matrices}
 }
 \value{
 A \code{double} that is the associated value of lambda to the provided \code{df}.

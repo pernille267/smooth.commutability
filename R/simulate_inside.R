@@ -3,26 +3,35 @@
 #' This function checks if external quality assessment materials are inside estimated prediction intervals given \code{df_max}
 #' @keywords internal
 simulate_inside_df_max <- function(simulated_cs_data, simulated_eq_data, df_max, level = 0.95){
+  # Set default df_0 to NULL
   df_0 <- NULL
-  ss_fit <- tryCatch(expr = {smooth.spline(x = simulated_cs_data$MP_B, y = simulated_cs_data$MP_A, all.knots = TRUE, cv = TRUE)},
+  # Calculate interior knots
+  interior_knots <- calculate_interior_knots((sort(simulated_cs_data$MP_B) - min(simulated_cs_data$MP_B)) / diff(range(simulated_cs_data$MP_B)))
+  # Attempt to fit a smoothing spline using smooth.spline
+  ss_fit <- tryCatch(expr = {smooth.spline(x = simulated_cs_data$MP_B, y = simulated_cs_data$MP_A, all.knots = c(0, interior_knots, 1), cv = TRUE, control.spar = list(low = 0.38, high = 1.5))},
                              error = function(e){return(NULL)})
+  # If the smooth.spline fit fails, assign lambda to NULL
   if(is.null(ss_fit)){
     lambda_instead <- NULL
     rm(ss_fit)
   }
+  # If the smooth.spline fit succeeds, use the lambda
   else{
     lambda_instead <- ss_fit$lambda
+    df_0 <- ss_fit$df
     rm(ss_fit)
   }
-  if(exists(df_0) & df_0 > df_max & df_0 >= 2){
-    lambda_instead <- tryCatch(expr = {smooth.spline(x = simulated_cs_data$MP_B, y = simulated_cs_data$MP_A, df = df_max, all.knots = TRUE)$lambda},
+
+  # If the df_0 is too large try fitting smooth.spline again using df = df_max
+  if((!is.null(df_0)) & df_0 > df_max){
+    lambda_instead <- tryCatch(expr = {smooth.spline(x = simulated_cs_data$MP_B, y = simulated_cs_data$MP_A, df = df_max, all.knots = c(0, interior_knots, 1), cv = TRUE)$lambda},
                                error = function(e){return(NULL)})
   }
-  else if(exists(df_0) & df_0 <= df_max & df_0 >= 2){
-    lambda_instead <- tryCatch(expr = {smooth.spline(x = simulated_cs_data$MP_B, y = simulated_cs_data$MP_A, df = df_0, all.knots = TRUE)$lambda},
+  else if((!is.null(df_0)) & df_0 <= df_max & df_0 >= 2){
+    lambda_instead <- tryCatch(expr = {smooth.spline(x = simulated_cs_data$MP_B, y = simulated_cs_data$MP_A, df = df_0, all.knots = c(0, interior_knots, 1), cv = TRUE)$lambda},
                                error = function(e){return(NULL)})
   }
-  else if(exists(df_0) & df_0 < 2){
+  else if((!is.null(df_0)) & df_0 < 2){
     lambda_instead <- NULL
   }
   if(is.null(lambda_instead)){
@@ -62,7 +71,8 @@ simulate_inside_df_max <- function(simulated_cs_data, simulated_eq_data, df_max,
 #' This function checks if external quality assessment materials are inside estimated prediction intervals given \code{df}
 #' @keywords internal
 simulate_inside_df <- function(simulated_cs_data, simulated_eq_data, df, level = 0.95){
-  lambda_instead <- tryCatch(expr = {smooth.spline(x = simulated_cs_data$MP_B, y = simulated_cs_data$MP_A, df = df, all.knots = TRUE)$lambda},
+  interior_knots <- calculate_interior_knots((sort(simulated_cs_data$MP_B) - min(simulated_cs_data$MP_B)) / diff(range(simulated_cs_data$MP_B)))
+  lambda_instead <- tryCatch(expr = {smooth.spline(x = simulated_cs_data$MP_B, y = simulated_cs_data$MP_A, df = df, all.knots = c(0, interior_knots, 1), cv = TRUE)$lambda},
                              error = function(e){return(NULL)})
   if(is.null(lambda_instead)){
     tryCatch(expr = {
@@ -176,11 +186,11 @@ simulate_inside <- function(parameters, m = 1, level = 0.95){
     if(!any("cve" == names(parameters))){
       parameters$cve <- 0
     }
-    simulated_cs_data <- simulate_eqa_data_custom_cpp(parameters = parameters, type = type, AR = FALSE) |> setDT()
+    simulated_cs_data <- simulate_eqa_data2(parameters = parameters, type = type, AR = FALSE) |> setDT()
     simulated_eq_data <- simulated_cs_data[SampleID %in% sample(x = SampleID[MP_B > min(MP_B) & MP_B < max(MP_B)], size = m, replace = FALSE),]
     simulated_cs_data <- simulated_cs_data[!SampleID %in% simulated_eq_data$SampleID]
     if(sum(is.na(simulated_cs_data$MP_B)) + sum(is.na(simulated_cs_data$MP_A)) > 0){
-      simulated_cs_data <- simulate_eqa_data_custom_cpp(parameters = parameters, type = type, AR = FALSE) |> setDT()
+      simulated_cs_data <- simulate_eqa_data2(parameters = parameters, type = type, AR = FALSE) |> setDT()
       simulated_eq_data <- simulated_cs_data[SampleID %in% sample(x = SampleID[MP_B > min(MP_B) & MP_B < max(MP_B)], size = m, replace = FALSE),]
       simulated_cs_data <- simulated_cs_data[!SampleID %in% simulated_eq_data$SampleID]
       if(sum(is.na(simulated_cs_data$MP_B)) + sum(is.na(simulated_cs_data$MP_A)) > 0){
@@ -209,7 +219,7 @@ simulate_inside <- function(parameters, m = 1, level = 0.95){
     return(suppressWarnings(simulate_inside_df(simulated_cs_data, simulated_eq_data, df, level)))
   }
   else if(isTRUE(require_df_max)){
-    return(suppressWarnings(simulate_inside_df(simulated_cs_data, simulated_eq_data, df_max, level)))
+    return(suppressWarnings(simulate_inside_df_max(simulated_cs_data, simulated_eq_data, df_max, level)))
   }
   else{
     return(NA_integer_)

@@ -4,12 +4,14 @@
 \alias{nfold_cv}
 \title{N-fold cross-validation estimate of the mean squared prediction error of the smoothing spline model}
 \usage{
-nfold_cv(lambda, y, B, BTB, Omega, cross_validation = FALSE)
+nfold_cv(sp, y, weights, B, BTB, Omega, cross_validation = FALSE, r = 1)
 }
 \arguments{
-\item{lambda}{A non-negative \code{double}. This value is usually what is optimized.}
+\item{sp}{A non-negative \code{double}. This is a scaled version of the raw smoothing parameter lambda and is usually what is optimized.}
 
 \item{y}{A \code{numeric} vector sorted according to the order of the predictor \code{x}.}
+
+\item{weights}{A \code{numeric} vector sorted according to the order of the predictor \code{x}.}
 
 \item{B}{A B-spline basis \code{matrix} evaluated at the sorted and unique values of \code{x} .}
 
@@ -18,6 +20,8 @@ nfold_cv(lambda, y, B, BTB, Omega, cross_validation = FALSE)
 \item{Omega}{The penalty \code{matrix} for the B-spline basis.}
 
 \item{cross_validation}{A \code{logical} value. If set to \code{TRUE}, you are effectively prompting that the lambda inputs are equivalent to the spar smoothing parameter.}
+
+\item{r}{The trace ratio of the matrices}
 }
 \value{
 A \code{double} that signify the n-fold cross-validation score

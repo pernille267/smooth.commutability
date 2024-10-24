@@ -94,12 +94,12 @@ simulate_confidence_level <- function(N = 1e2L, n = 1, m = 1, parameters, level 
     out <- rbindlist(out)
     not_group <- c("inside", "SampleID")
     if(m <= 1){
-      print("m <= 1")
+      #print("m <= 1")
       all_inside <- FALSE
       global_mean <- FALSE
     }
     if(all_inside){
-      print("all_inside")
+      #print("all_inside")
       global_mean <- FALSE
       out <- out[, list(inside = as.integer(identical(inside, rep(1L, length(inside))))), by = setdiff(names(out), not_group)]
       print(out)
@@ -114,7 +114,7 @@ simulate_confidence_level <- function(N = 1e2L, n = 1, m = 1, parameters, level 
       return(out)
     }
     if((!global_mean) & (!all_inside)){
-      print("not global_mean & not all_inside")
+      #print("not global_mean & not all_inside")
       if(m > 1){
         out <- out[, list(inside = mean(inside, na.rm = TRUE)), by = setdiff(names(out), not_group)]
       }
@@ -151,12 +151,12 @@ simulate_confidence_level <- function(N = 1e2L, n = 1, m = 1, parameters, level 
     out$replication <- NULL
     not_group <- c("inside", "SampleID")
     if(m <= 1){
-      print("m <= 1")
+      #print("m <= 1")
       all_inside <- FALSE
       global_mean <- FALSE
     }
     if(all_inside){
-      print("all_inside")
+      #print("all_inside")
       global_mean <- FALSE
       out <- out[, list(inside = as.integer(identical(inside, rep(1L, length(inside))))), by = setdiff(names(out), not_group)]
       print(out)
@@ -171,7 +171,7 @@ simulate_confidence_level <- function(N = 1e2L, n = 1, m = 1, parameters, level 
       return(out)
     }
     if((!global_mean) & (!all_inside)){
-      print("not global_mean & not all_inside")
+      #print("not global_mean & not all_inside")
       if(m > 1){
         out <- out[, list(inside = mean(inside, na.rm = TRUE)), by = setdiff(names(out), not_group)]
       }

@@ -4,11 +4,22 @@
 \alias{smoothing_spline}
 \title{Fit a Smoothing Spline Model with O'Sullivan Penalty}
 \usage{
-smoothing_spline(data, df = NULL, lambda = NULL, df_max = 7.5)
+smoothing_spline(
+  data,
+  weights = 1,
+  df = NULL,
+  lambda = NULL,
+  df_max = 7.5,
+  attempt_fast = FALSE,
+  na_rm = TRUE
+)
 }
 \arguments{
 \item{data}{A \code{data.table}, \code{data.frame} or \code{list} containing the measurements.
 It should include two specific variables named 'MP_B' and 'MP_A'.}
+
+\item{weights}{A \code{numeric} vector of length equal to the number of unique elements in \code{SampleID}.
+Default is \code{1}, which assigns equal weights to every observation.}
 
 \item{df}{Optional; a \code{numeric} value specifying the degrees of freedom for the spline model.
 Should be between 2 and the number of clinical samples in \code{data}.
@@ -20,15 +31,35 @@ n-fold cross-validation to minimize the mean squared prediction error.}
 
 \item{df_max}{A \code{numeric} value between 2 and the number of clinical samples in \code{data}.
 If n-fold cross-validation is used to obtain the optimal effective number of degrees of freedom, what is its upper limit.}
+
+\item{attempt_fast}{A \code{logical} value. If set to \code{TRUE}, the algorithm will attempt to utilize the \code{smoothing.spline()} method
+to derive \code{df} and \code{lambda}. It is generally not recommended to set this to \code{TRUE}.}
+
+\item{na_rm}{A \code{logical} value. If set to \code{TRUE}, NA values are removed before fitting the smoothing spline.}
 }
 \value{
 A \code{list} containing the components of the smoothing spline fit, including:
-        - \code{fitted}: Fitted values of the spline model.
-        - \code{residuals}: Residuals from the fitted model.
-        - \code{df}: Effective degrees of freedom used.
-        - \code{lambda}: Penalty parameter used.
-        - \code{cv_crit}: Criterion value from cross-validation.
-        - Additional model components.
+\itemize{
+   \item \code{fitted}: Fitted values of the spline model.
+   \item \code{residuals}: Residuals from the fitted model.
+   \item \code{df}: Effective degrees of freedom used.
+   \item \code{lambda}: Penalty parameter used.
+   \item \code{sp}: Scale-invariant smoothing-paramater. Equivalent to \code{spar} in smooth.spline
+   \item \code{cv_crit}: Criterion value from cross-validation.
+   \item \code{var_eps}: Estimated variance of the model error terms.
+   \item \code{var_fit}: Estimated variance of the fitted values.
+   \item \code{coefficients}: Estimated coefficient vector of length \eqn{n + 4}.
+   \item \code{cov_beta}: Estimated coefficient covariance matrix of dims \eqn{(n + 4) \times (n+4)}.
+   \item \code{penalty_matrix}: Estimated penalty matrix of dims \eqn{(n + 4) \times (n+4)}.
+   \item \code{B}: The B-spline matrix evaluated at each \eqn{n} observation and \eqn{n + 4} knots.
+   \item \code{BTB}: The inner product of the B-spline matrix \code{B}.
+   \item \code{interior_knots}: The \eqn{n} inner knots (scaled to unit interval)
+   \item \code{knot_boundary}: The \eqn{2} boundary knots (scaled to unit interval). These will always be 0 and 1.
+   \item \code{weights}: The used weights for the smoothing spline fit.
+   \item \code{x}: The original predictor values sorted in increasing order.
+   \item \code{y}: The original response values sorted in increasing order.
+}
+
         These components are often utilized in subsequent analyses and visualizations.
 }
 \description{

@@ -10,79 +10,137 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// bspline_basis
-double bspline_basis(int j, int m, NumericVector knots, double x);
-RcppExport SEXP _smooth_commutability_bspline_basis(SEXP jSEXP, SEXP mSEXP, SEXP knotsSEXP, SEXP xSEXP) {
+// fun_of_replicates2
+List fun_of_replicates2(List data, std::string fun);
+RcppExport SEXP _smooth_commutability_fun_of_replicates2(SEXP dataSEXP, SEXP funSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type j(jSEXP);
-    Rcpp::traits::input_parameter< int >::type m(mSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type knots(knotsSEXP);
-    Rcpp::traits::input_parameter< double >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(bspline_basis(j, m, knots, x));
+    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< std::string >::type fun(funSEXP);
+    rcpp_result_gen = Rcpp::wrap(fun_of_replicates2(data, fun));
     return rcpp_result_gen;
 END_RCPP
 }
-// bspline_basis_matrix
-NumericMatrix bspline_basis_matrix(NumericVector x, NumericVector knots, int m);
-RcppExport SEXP _smooth_commutability_bspline_basis_matrix(SEXP xSEXP, SEXP knotsSEXP, SEXP mSEXP) {
+// obtain_df_max
+double obtain_df_max(NumericVector df, NumericVector second_deriv, double threshold);
+RcppExport SEXP _smooth_commutability_obtain_df_max(SEXP dfSEXP, SEXP second_derivSEXP, SEXP thresholdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type df(dfSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type second_deriv(second_derivSEXP);
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    rcpp_result_gen = Rcpp::wrap(obtain_df_max(df, second_deriv, threshold));
+    return rcpp_result_gen;
+END_RCPP
+}
+// reconstruct_4_band_matrix
+NumericMatrix reconstruct_4_band_matrix(NumericVector x);
+RcppExport SEXP _smooth_commutability_reconstruct_4_band_matrix(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type knots(knotsSEXP);
-    Rcpp::traits::input_parameter< int >::type m(mSEXP);
-    rcpp_result_gen = Rcpp::wrap(bspline_basis_matrix(x, knots, m));
+    rcpp_result_gen = Rcpp::wrap(reconstruct_4_band_matrix(x));
     return rcpp_result_gen;
 END_RCPP
 }
-// df_2
-double df_2(NumericVector df_grid, NumericVector cv, double df_0, double D, double tol, bool silence);
-RcppExport SEXP _smooth_commutability_df_2(SEXP df_gridSEXP, SEXP cvSEXP, SEXP df_0SEXP, SEXP DSEXP, SEXP tolSEXP, SEXP silenceSEXP) {
+// get_matrices
+List get_matrices(List auxM);
+RcppExport SEXP _smooth_commutability_get_matrices(SEXP auxMSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type df_grid(df_gridSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type cv(cvSEXP);
-    Rcpp::traits::input_parameter< double >::type df_0(df_0SEXP);
-    Rcpp::traits::input_parameter< double >::type D(DSEXP);
-    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    Rcpp::traits::input_parameter< bool >::type silence(silenceSEXP);
-    rcpp_result_gen = Rcpp::wrap(df_2(df_grid, cv, df_0, D, tol, silence));
+    Rcpp::traits::input_parameter< List >::type auxM(auxMSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_matrices(auxM));
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_hello_world
-List rcpp_hello_world();
-RcppExport SEXP _smooth_commutability_rcpp_hello_world() {
+// global_precision_estimates2
+List global_precision_estimates2(List data);
+RcppExport SEXP _smooth_commutability_global_precision_estimates2(SEXP dataSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(rcpp_hello_world());
+    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
+    rcpp_result_gen = Rcpp::wrap(global_precision_estimates2(data));
     return rcpp_result_gen;
 END_RCPP
 }
-// simulate_eqa_data_custom_cpp
-List simulate_eqa_data_custom_cpp(List parameters, int type, bool AR);
-RcppExport SEXP _smooth_commutability_simulate_eqa_data_custom_cpp(SEXP parametersSEXP, SEXP typeSEXP, SEXP ARSEXP) {
+// resample_samples2
+List resample_samples2(List data);
+RcppExport SEXP _smooth_commutability_resample_samples2(SEXP dataSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
+    rcpp_result_gen = Rcpp::wrap(resample_samples2(data));
+    return rcpp_result_gen;
+END_RCPP
+}
+// resample_fun_samples2
+List resample_fun_samples2(List data, List weight_data);
+RcppExport SEXP _smooth_commutability_resample_fun_samples2(SEXP dataSEXP, SEXP weight_dataSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< List >::type weight_data(weight_dataSEXP);
+    rcpp_result_gen = Rcpp::wrap(resample_fun_samples2(data, weight_data));
+    return rcpp_result_gen;
+END_RCPP
+}
+// resample_fun_samples2_all
+List resample_fun_samples2_all(List data, List weight_data);
+RcppExport SEXP _smooth_commutability_resample_fun_samples2_all(SEXP dataSEXP, SEXP weight_dataSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< List >::type weight_data(weight_dataSEXP);
+    rcpp_result_gen = Rcpp::wrap(resample_fun_samples2_all(data, weight_data));
+    return rcpp_result_gen;
+END_RCPP
+}
+// resample_imprecision2
+List resample_imprecision2(List data);
+RcppExport SEXP _smooth_commutability_resample_imprecision2(SEXP dataSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
+    rcpp_result_gen = Rcpp::wrap(resample_imprecision2(data));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simulate_eqa_data2
+List simulate_eqa_data2(List parameters, int type, bool AR, bool include_parameters, bool shift);
+RcppExport SEXP _smooth_commutability_simulate_eqa_data2(SEXP parametersSEXP, SEXP typeSEXP, SEXP ARSEXP, SEXP include_parametersSEXP, SEXP shiftSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type parameters(parametersSEXP);
     Rcpp::traits::input_parameter< int >::type type(typeSEXP);
     Rcpp::traits::input_parameter< bool >::type AR(ARSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_eqa_data_custom_cpp(parameters, type, AR));
+    Rcpp::traits::input_parameter< bool >::type include_parameters(include_parametersSEXP);
+    Rcpp::traits::input_parameter< bool >::type shift(shiftSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_eqa_data2(parameters, type, AR, include_parameters, shift));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_smooth_commutability_bspline_basis", (DL_FUNC) &_smooth_commutability_bspline_basis, 4},
-    {"_smooth_commutability_bspline_basis_matrix", (DL_FUNC) &_smooth_commutability_bspline_basis_matrix, 3},
-    {"_smooth_commutability_df_2", (DL_FUNC) &_smooth_commutability_df_2, 6},
-    {"_smooth_commutability_rcpp_hello_world", (DL_FUNC) &_smooth_commutability_rcpp_hello_world, 0},
-    {"_smooth_commutability_simulate_eqa_data_custom_cpp", (DL_FUNC) &_smooth_commutability_simulate_eqa_data_custom_cpp, 3},
+    {"_smooth_commutability_fun_of_replicates2", (DL_FUNC) &_smooth_commutability_fun_of_replicates2, 2},
+    {"_smooth_commutability_obtain_df_max", (DL_FUNC) &_smooth_commutability_obtain_df_max, 3},
+    {"_smooth_commutability_reconstruct_4_band_matrix", (DL_FUNC) &_smooth_commutability_reconstruct_4_band_matrix, 1},
+    {"_smooth_commutability_get_matrices", (DL_FUNC) &_smooth_commutability_get_matrices, 1},
+    {"_smooth_commutability_global_precision_estimates2", (DL_FUNC) &_smooth_commutability_global_precision_estimates2, 1},
+    {"_smooth_commutability_resample_samples2", (DL_FUNC) &_smooth_commutability_resample_samples2, 1},
+    {"_smooth_commutability_resample_fun_samples2", (DL_FUNC) &_smooth_commutability_resample_fun_samples2, 2},
+    {"_smooth_commutability_resample_fun_samples2_all", (DL_FUNC) &_smooth_commutability_resample_fun_samples2_all, 2},
+    {"_smooth_commutability_resample_imprecision2", (DL_FUNC) &_smooth_commutability_resample_imprecision2, 1},
+    {"_smooth_commutability_simulate_eqa_data2", (DL_FUNC) &_smooth_commutability_simulate_eqa_data2, 5},
     {NULL, NULL, 0}
 };
 

@@ -4,18 +4,22 @@
 \alias{error_df}
 \title{Computes the absolute effective degrees of freedom error}
 \usage{
-error_df(lambda, df, B, BTB, Omega)
+error_df(sp, df, weights, B, BTB, Omega, r = 1)
 }
 \arguments{
-\item{lambda}{A \code{double}, and is a scale-free variant of the computational lambda. Given this value of \code{lambda}, the trace of the smoother matrix is calculated and the absolute deviation between this and the given \code{df} is recorded.}
+\item{sp}{A \code{double}, and is a scale-free variant of the computational lambda. Given this value of \code{lambda}, the trace of the smoother matrix is calculated and the absolute deviation between this and the given \code{df} is recorded.}
 
 \item{df}{A \code{double} that corresponds to the target effective degrees of freedom for the smoothing spline model.}
+
+\item{weights}{A \code{numeric} vector sorted according to the order of the predictor \code{x}.}
 
 \item{B}{A B-spline basis \code{matrix} evaluated at the sorted and unique values of the predictor values, \code{x}.}
 
 \item{BTB}{A \code{matrix} that is the matrix product between the transpose of \code{B} and \code{B}.}
 
 \item{Omega}{The O'Sullivan penalty \code{matrix} for the B-spline basis.}
+
+\item{r}{The trace ratio of the matrices}
 }
 \value{
 A \code{double} that signify the absolute deviation between the trace of the smoother matrix (given the value of \code{lambda}) and the provided value of \code{df}.
