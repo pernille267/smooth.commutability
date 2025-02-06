@@ -18,22 +18,41 @@ double calculate_stat(const std::vector<double>& values, const std::string& fun)
   if (fun == "mean") {
     result = std::accumulate(values.begin(), values.end(), 0.0) / n;
   } else if (fun == "var") {
-    double mean = std::accumulate(values.begin(), values.end(), 0.0) / n;
-    double sqSum = std::inner_product(values.begin(), values.end(), values.begin(), 0.0);
-    result = (sqSum - n * mean * mean) / (n - 1);
+    if (std::adjacent_find(values.begin(), values.end(),
+                           std::not_equal_to<>()) == values.end()) {
+      result = 0.0;
+    }
+    else{
+      double mean = std::accumulate(values.begin(), values.end(), 0.0) / n;
+      double sqSum = std::inner_product(values.begin(), values.end(), values.begin(), 0.0);
+      result = (sqSum - n * mean * mean) / (n - 1);
+    }
+
   } else if (fun == "median") {
     std::vector<double> sortedValues = values;
     std::sort(sortedValues.begin(), sortedValues.end());
     result = (n % 2 == 0) ? (sortedValues[n/2 - 1] + sortedValues[n/2]) / 2 : sortedValues[n/2];
   } else if (fun == "sd") {
-    double mean = std::accumulate(values.begin(), values.end(), 0.0) / n;
-    double sqSum = std::inner_product(values.begin(), values.end(), values.begin(), 0.0);
-    result = std::sqrt((sqSum - n * mean * mean) / (n - 1));
+    if (std::adjacent_find(values.begin(), values.end(),
+                           std::not_equal_to<>()) == values.end()) {
+      result = 0.0;
+    }
+    else{
+      double mean = std::accumulate(values.begin(), values.end(), 0.0) / n;
+      double sqSum = std::inner_product(values.begin(), values.end(), values.begin(), 0.0);
+      result = std::sqrt((sqSum - n * mean * mean) / (n - 1));
+    }
   } else if (fun == "cv") {
+    if (std::adjacent_find(values.begin(), values.end(),
+                           std::not_equal_to<>()) == values.end()) {
+      result = 0.0;
+    }
+    else{
       double mean = std::accumulate(values.begin(), values.end(), 0.0) / n;
       double sqSum = std::inner_product(values.begin(), values.end(), values.begin(), 0.0);
       double stDev = std::sqrt((sqSum - n * mean * mean) / (n - 1));
       result = stDev / mean;
+    }
   } else if (fun == "min") {
     result = *std::min_element(values.begin(), values.end());
   } else if (fun == "max") {

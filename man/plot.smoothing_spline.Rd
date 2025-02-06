@@ -2,30 +2,66 @@
 % Please edit documentation in R/smoothing_spline.R
 \name{plot.smoothing_spline}
 \alias{plot.smoothing_spline}
-\title{Default Plot Method for Smoothing Spline Output}
+\title{Plot Method for Smoothing Spline Objects}
 \usage{
-\method{plot}{smoothing_spline}(output, error = c("confidence", "prediction", "none"), level = 0.95)
+\method{plot}{smoothing_spline}(
+  output,
+  type = c("confidence", "prediction", "residual", "bias", "none"),
+  level = 0.95,
+  y_true = NULL
+)
 }
 \arguments{
-\item{output}{A \code{smoothing_spline} object, which is the output of \code{smoothing_spline()} method.}
-
-\item{error}{A \code{character} string value. Can be one of the following:
+\item{output}{An object containing \code{smoothing_spline} fit results with the following components:
 \itemize{
-  \item \code{confidence}: Include estimated confidence bands around the smoothing spline.
-  \item \code{prediction}: Include estimated prediction bands around the smoothing spline.
-  \item \code{none}: Do not include estimated uncertainty bands around the smoothing spline.
+ \item \code{x:} Predictor values
+ \item \code{y:} Response values
+ \item \code{fitted:} Fitted values
+ \item \code{weights:} Observation weights
+ \item \code{residuals:} Model residuals
+ \item \code{var_eps:} Error term variance
+ \item \code{var_fit:} Fit variance
+ \item \code{df:} Effective degrees of freedom
+ \item \code{cv_crit:} Cross-validation score
 }}
 
-\item{level}{A \code{double}. The confidence level of the error interval.
-Must be between \code{0} and \code{1}. Default value is \code{0.95}.}
+\item{type}{\code{Character} string specifying the type of plot. Options are:
+\itemize{
+  \item \code{confidence}: Smoothing spline fit with confidence intervals (default)
+  \item \code{prediction}: Smoothing spline fit with prediction intervals
+  \item \code{residual}: Smoothing spline standardized weighted residuals
+  \item \code{bias}: Bias analysis (required \code{y_true})
+  \item \code{none}: Basic smoothing spline fit without intervals
+}}
+
+\item{level}{Numeric value between 0 and 1 specifying the confidence/prediction
+level (default: \code{0.95}).}
+
+\item{y_true}{Optional \code{numeric} vector of true response values for bias analysis.}
 }
 \value{
-Returns a \code{ggplot2} object. This plot contains the fitted \code{smoothing_spline} object,
-        the data points used in fitting it, and uncertainty bands
-        around the smoothing spline.
+A ggplot2 object containing the requested diagnostic plot
 }
 \description{
-Default Plot Method for Smoothing Spline Output
+Creates diagnostic plots for smoothing spline fits, including confidence intervals,
+prediction intervals, residual analysis, and bias assessment.
+}
+\details{
+The function produces different types of diagnostic plots:
+\itemize{
+  \item Confidence intervals show uncertainty in the mean response
+  \item Prediction intervals show uncertainty in individual predictions
+  \item Residual plots display standardized weighted residuals against fitted values
+  \item Bias plots show systematic deviations when true values are known
+}
+The plots include:
+\itemize{
+  \item Green shaded regions for interval estimates
+  \item Black solid line for the fitted values
+  \item Blue dashed line for linear fit (where applicable)
+  \item Red dashed line for reference lines (y=x or y=0)
+  \item Points showing observed data
+}
 }
 \examples{
 print(1)

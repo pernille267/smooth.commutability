@@ -8,31 +8,33 @@ using namespace Rcpp;
 //'
 //' @param parameters A \code{list} of parametedrs used to simulate the EQA data. You must at least specify one parameter for this function to run. Except that one mandatory parameter, you may optionally choose the remaining of the parameters. These are the optimal parameters that you may include into the list:
 //' \itemize{
-//'   \item{\code{n: }}{  The number of clinical samples}
-//'   \item{\code{R: }}{The number of replicates on each sample}
-//'   \item{\code{cvx: }}{The analytical CV of x measurements}
-//'   \item{\code{cvy: }}{The analytical CV of y measurements}
-//'   \item{\code{cil: }}{The lower range of the concentration interval}
-//'   \item{\code{ciu: }}{The upper range of the concentration interval}
-//'   \item{\code{dist: }}{The distribution to simulate latent variables from. Possbile choices include 'unif' (uniform distribution, default), 'norm' (normal distribution) , 'lst' (location-scale t-distribution), 'lnorm' (log-normal distribution)}
-//'   \item{\code{df_tau: }}{The degrees of freedom for the 'lst' distribution if the distribution of latent variables are location-scale t-distributed ('lst'). Defaults to 5 if not otherwise is specified.}
-//'   \item{\code{eta: }}{The heteroscedasticity factor}
-//'   \item{\code{eta0: }}{The proportion of base MS standard deviations}
-//'   \item{\code{qpos: }}{Position of systematic differences in non-selectivity. 0 signify lower range and 1 signify upper range}
-//'   \item{\code{qran: }}{Interquantile range where systematic differences in non-selectivity should have its effect}
-//'   \item{\code{prop: }}{average proportion of clinical samples affected by random differences in non-selectivity}
-//'   \item{\code{mmax: }}{The maximum relocation magnitude in number of analytical SDs of y measurements. This assumes either prop or qpos and qran to be specified as well}
-//'   \item{\code{b0: }}{For systematic linear DINS between IVD-MDs. Intercept. Defaults to 0.}
-//'   \item{\code{b1: }}{For systematic linear DINS between IVD-MDs. Slope. Defaults to 1.}
-//'   \item{\code{c0: }}{For systematic linear non-selectivity in IVD-MD 1. Intercept. Defaults to 0.}
-//'   \item{\code{c1: }}{For systematic linear non-selectivity in IVD-MD 1. Slope. Defaults to 1.}
-//'   \item{\code{error_dist: }}{The distribution to simulate measurement error components from. Possible choices include 'norm' (normal distribution, default) and 'lt' (location t-distribution)}
-//'   \item{\code{dfx: }}{The degrees of freedom for the measurement error components in IVD-MD 1 if error_dist = 'lt'. Defaults to 5 if not otherwise is specified.}
-//'   \item{\code{dfy: }}{The degrees of freedom for the measurement error components in IVD-MD 2 if error_dist = 'lt'. Defaults to 5 if not otherwise is specified.}
-//'   \item{\code{md_method: }}{Method for simulation missing data. Possible choices include 'none' (no missing data is simulated, default), 'mar' (missing at random), 'mnar' (missing not at random) and 'marmnar' (missing both at random and not at random)}
-//'   \item{\code{mar_prob: }}{The probability (value between 0 and 1) of having a missing measurement. Only relevant if \code{md_method} is 'mar' or 'marmnar'. If not specified, but \code{md_method} = 'mar' or \code{md_method} = 'marmnar', it defaults to 0.05.}
-//'   \item{\code{mnar_threshold: }}{The lower bound threshold (a real value) for when a measurement should be missing. Only relevant if \code{md_method} is 'mnar' or 'marmnar'. If not specified, but \code{md_method} = 'mnar' or \code{md_method} = 'marmnar', it defaults to \code{cil}. Alternatively, if not specified, but \code{md_method} = 'mnar0' or \code{md_method} = 'marmnar0', it defaults to 0.}
-//'
+//'   \item \code{n:} The number of samples.
+//'   \item \code{R:} The number of replicates on each sample.
+//'   \item \code{cvx:} The repeatability coefficient of variation for IVD-MD \code{MP_B}.
+//'   \item \code{cvy:} The repeatability coefficient of variation for IVD-MD \code{MP_A}.
+//'   \item \code{cil:} The lower bound of the concentration interval
+//'   \item \code{ciu:} The upper bound of the concentration interval
+//'   \item \code{dist:} The distribution to simulate latent variables from.
+//'                      Possbile choices include \code{unif} (uniform distribution, default),
+//'                      \code{norm} (normal distribution), \code{lst} (location-scale t-distribution),
+//'                      \code{lnorm} (log-normal distribution)
+//'   \item \code{df_tau:} The degrees of freedom for the 'lst' distribution if the distribution of latent variables are location-scale t-distributed ('lst'). Defaults to 5 if not otherwise is specified.
+//'   \item \code{eta:} The heteroscedasticity factor.
+//'   \item \code{eta0:} The proportion of base MS standard deviations.
+//'   \item \code{qpos:} Position of systematic differences in non-selectivity. 0 signify lower range and 1 signify upper range
+//'   \item \code{qran:} Interquantile range where systematic differences in non-selectivity should have its effect
+//'   \item \code{prop:} average proportion of clinical samples affected by random differences in non-selectivity
+//'   \item \code{mmax:} The maximum relocation magnitude in number of analytical SDs of y measurements. This assumes either prop or qpos and qran to be specified as well
+//'   \item \code{b0:} For systematic linear DINS between IVD-MDs. Intercept. Defaults to 0.
+//'   \item \code{b1:} For systematic linear DINS between IVD-MDs. Slope. Defaults to 1.
+//'   \item \code{c0:} For systematic linear non-selectivity in IVD-MD 1. Intercept. Defaults to 0.
+//'   \item \code{c1:} For systematic linear non-selectivity in IVD-MD 1. Slope. Defaults to 1.
+//'   \item \code{error_dist:} The distribution to simulate measurement error components from. Possible choices include 'norm' (normal distribution, default) and 'lt' (location t-distribution)
+//'   \item \code{dfx:} The degrees of freedom for the measurement error components in IVD-MD 1 if error_dist = 'lt'. Defaults to 5 if not otherwise is specified.
+//'   \item \code{dfy:} The degrees of freedom for the measurement error components in IVD-MD 2 if error_dist = 'lt'. Defaults to 5 if not otherwise is specified.
+//'   \item \code{md_method:} Method for simulation missing data. Possible choices include 'none' (no missing data is simulated, default), 'mar' (missing at random), 'mnar' (missing not at random) and 'marmnar' (missing both at random and not at random)
+//'   \item \code{mar_prob:} The probability (value between 0 and 1) of having a missing measurement. Only relevant if \code{md_method} is 'mar' or 'marmnar'. If not specified, but \code{md_method} = 'mar' or \code{md_method} = 'marmnar', it defaults to 0.05.
+//'   \item \code{mnar_threshold:} The lower bound threshold (a real value) for when a measurement should be missing. Only relevant if \code{md_method} is 'mnar' or 'marmnar'. If not specified, but \code{md_method} = 'mnar' or \code{md_method} = 'marmnar', it defaults to \code{cil}. Alternatively, if not specified, but \code{md_method} = 'mnar0' or \code{md_method} = 'marmnar0', it defaults to 0.
 //' }
 //' @param type \code{integer}. Set to \code{0} for default simulation of data. Set to \code{1}, \code{2} or \code{3} to simulate from custom built in non-linear functions.
 //' @param AR \code{logical}. If \code{TRUE}, data is simulated including replicated measurements. Otherwise, mean of replicated measurements are returned (MOR).
@@ -109,6 +111,12 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
  int md_method_exists = 0;
  int mar_prob_exists = 0;
  int mnar_threshold_exists = 0;
+ int qdir_exists = 0;
+ int obs_tau_exists = 0;
+ int qlim_exists = 0;
+ int qnor_exists = 0;
+ int sdx_exists = 0;
+ int sdy_exists = 0;
 
  // Checks which of the parameters found in the 'parameters' argument
  CharacterVector given_parameters = parameters.names();
@@ -116,7 +124,7 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
 
  for(int i = 0; i < number_given_parameters; ++i){
 
-   CharacterVector candidate_param(24);
+   CharacterVector candidate_param(30);
    candidate_param[0] = "n";
    candidate_param[1] = "R";
    candidate_param[2] = "cvx";
@@ -141,6 +149,13 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
    candidate_param[21] = "md_method";
    candidate_param[22] = "mar_prob";
    candidate_param[23] = "mnar_threshold";
+   candidate_param[24] = "qdir";
+   candidate_param[25] = "obs_tau";
+   candidate_param[26] = "qlim";
+   candidate_param[27] = "qnor";
+   candidate_param[28] = "sdx";
+   candidate_param[29] = "sdy";
+
 
 
    if(candidate_param[0] == given_parameters[i]){
@@ -215,11 +230,29 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
    else if(candidate_param[23] == given_parameters[i]){
      mnar_threshold_exists = 1;
    }
+   else if(candidate_param[24] == given_parameters[i]){
+     qdir_exists = 1;
+   }
+   else if(candidate_param[25] == given_parameters[i]){
+     obs_tau_exists = 1;
+   }
+   else if(candidate_param[26] == given_parameters[i]){
+     qlim_exists = 1;
+   }
+   else if(candidate_param[27] == given_parameters[i]){
+     qnor_exists = 1;
+   }
+   else if(candidate_param[28] == given_parameters[i]){
+     sdx_exists = 1;
+   }
+   else if(candidate_param[29] == given_parameters[i]){
+     sdy_exists = 1;
+   }
  }
 
  // Base parameters
- int n = 0;
- int R = 0;
+ int n = 25;
+ int R = 3;
  double cvx = 0;
  double cvy = 0;
  double cil = 0;
@@ -231,13 +264,18 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
 
  // Random and systematic differences in non-selectivity parameters
  int qpos = 0;
+ int qdir = 0;
  double qran = 0;
+ double qlim = 0;
+ double qnor = 1;
  double prop = 0;
  double mmax = 0;
 
- // Consistent linear differences in non-selectivity parameters
+ // Systematic linear differences in non-selectivity parameters
  double b0 = 0;
  double b1 = 1;
+
+ // Systematic linear non-selectivity
  double c0 = 0;
  double c1 = 1;
 
@@ -257,10 +295,10 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
  double mar_prob = 0;
  double mnar_threshold = 0;
 
-
+ // Generation of n
  if(n_exists == 1){
    int reg_n = parameters["n"];
-   n = n + reg_n;
+   n = reg_n;
  }
  else{
    int gen_n = R::rpois(25);
@@ -272,6 +310,7 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
    ns[1] = 20;
    n = max(ns);
  }
+ // Generation of R
  if(R_exists == 1){
    int reg_R = parameters["R"];
    R = reg_R;
@@ -279,45 +318,32 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
  else{
    double u = R::runif(0,1);
    if(u < 0.10){
-     R += 2;
+     R = 2;
    }
    else if(u < 0.95){
-     R += 3;
+     R = 3;
    }
    else{
-     R += 4;
+     R = 4;
    }
  }
- if(cvx_exists == 1){
-   double reg_cvx = parameters["cvx"];
-   cvx += reg_cvx;
- }
- else{
-   cvx += R::rbeta(2, 5) / 10.0;
- }
- if(cvy_exists == 1){
-   double reg_cvy = parameters["cvy"];
-   cvy += reg_cvy;
- }
- else{
-   cvy += R::rbeta(2, 5) / 10.0;
- }
+
  if(cil_exists == 1){
    double reg_cil = parameters["cil"];
-   cil += reg_cil;
+   cil = reg_cil;
  }
  else{
    if(type != 0){
-     cil += 2;
+     cil = 2;
    }
    else{
-     cil += R::rf(1.057057, 8.15) * 44;
+     cil = R::rf(1.057057, 8.15) * 44;
      if(cil < 0.01){
-       cil += R::rf(1.057057, 8.15) * 44;
+       cil = R::rf(1.057057, 8.15) * 44;
        if(cil < 0.01){
-         cil += R::rf(1.057057, 8.15) * 44;
+         cil = R::rf(1.057057, 8.15) * 44;
          if(cil < 0.01){
-           cil += R::rf(1.057057, 8.15) * 44;
+           cil = R::rf(1.057057, 8.15) * 44;
          }
        }
      }
@@ -326,9 +352,10 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
  if(ciu_exists == 1){
    double reg_ciu = parameters["ciu"];
    if(reg_ciu <= cil){
+     Rcout << "ciu is" << reg_ciu << "which is smaller than" << cil << "\n";
      stop("ciu must be larger than cil!");
    }
-   ciu += reg_ciu;
+   ciu = reg_ciu;
  }
  else{
    if(cil > 0){
@@ -343,6 +370,35 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
    }
    else{
      stop("cil is negative or zero. This should not be possible! Check if something is wrong");
+   }
+ }
+
+ // Generation of cvx
+ if(cvx_exists == 1){
+   double reg_cvx = parameters["cvx"];
+   cvx += reg_cvx;
+ }
+ else{
+   if(sdx_exists == 1){
+     double reg_sdx = parameters["sdx"];
+     cvx += reg_sdx / (0.5 * (cil + ciu));
+   }
+   else{
+     cvx += R::rbeta(2, 5) / 10.0;
+   }
+ }
+ // Generation of cvy
+ if(cvy_exists == 1){
+   double reg_cvy = parameters["cvy"];
+   cvy += reg_cvy;
+ }
+ else{
+   if(sdy_exists == 1){
+     double reg_sdy = parameters["sdy"];
+     cvy += reg_sdy / (0.5 * (cil + ciu));
+   }
+   else{
+     cvy += R::rbeta(2, 5) / 10.0;
    }
  }
 
@@ -423,9 +479,9 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
  }
 
  if(qran_exists == 1 and prop_exists == 1){
-   Rcout << "Both qran and prop are found in parameters" << "\n";
-   Rcout << "Make sure only one of them is used" << "\n";
-   Rcout << "prop is removed in favor of qran" << "\n";
+   //Rcout << "Both qran and prop are found in parameters" << "\n";
+   //Rcout << "Make sure only one of them is used" << "\n";
+   //Rcout << "prop is removed in favor of qran" << "\n";
    prop_exists -= 1;
  }
  if(qpos_exists == 1){
@@ -442,6 +498,30 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
  else{
    qran += 0;
  }
+
+ if(qdir_exists == 1){
+   int reg_qdir = parameters["qdir"];
+   qdir = reg_qdir;
+   if(qdir >= 1){
+     qdir = 1;
+   }
+   else if(qdir <= -1){
+     qdir = -1;
+   }
+   else{
+     qdir = 1;
+   }
+ }
+ else{
+   int above = R::rbinom(1, 0.5);
+   if(above == 1){
+     qdir += 1;
+   }
+   else{
+     qdir -= 1;
+   }
+ }
+
  if(prop_exists == 1){
    double reg_prop = parameters["prop"];
    prop += reg_prop;
@@ -520,8 +600,15 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
    mnar_threshold -= 999999.99;
  }
 
+ if(obs_tau_exists == 1){
+   NumericVector reg_obs_tau = parameters["obs_tau"];
+   n = reg_obs_tau.size();
+   dist = "none";
+ }
+
  NumericVector unsorted_tau(n);
  NumericVector tau(n);
+
  int nR = n * R;
  IntegerVector SampleID(nR);
  IntegerVector SampleID2(n);
@@ -534,14 +621,6 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
  double average = 0.5 * (cil + ciu);
  if(dist == "lnorm"){
    average = exp(mu_tau + pow(sigma_tau, 2.0) / 2.0);
- }
-
- int above = R::rbinom(1, 0.5);
- if(above == 1){
-   above = 1;
- }
- else{
-   above = -1;
  }
 
  double base_x = average * cvx;
@@ -563,7 +642,13 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
    seg_sdy = (end_sdy - beg_sdy) / n;
  }
 
- if(dist == "norm"){
+ if(dist == "none"){
+   NumericVector reg_obs_tau = parameters["obs_tau"];
+   for(int i = 0; i < n; ++i){
+     unsorted_tau[i] = reg_obs_tau[i];
+   }
+ }
+ else if(dist == "norm"){
    for(int i = 0; i < n; ++i){
      unsorted_tau[i] = R::rnorm(mu_tau, sigma_tau);
    }
@@ -624,19 +709,51 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
    }
    else if(qran_exists == 1){
      if(qpos == 0){
-       limit += cil + qran * (ciu - cil);
+       if(qlim_exists == 1){
+         double reg_qlim = parameters["qlim"];
+         limit += reg_qlim;
+       }
+       else{
+         limit += cil + qran * (ciu - cil);
+       }
+       if(qnor_exists == 1){
+         double reg_qnor = parameters["qnor"];
+         qnor = reg_qnor;
+       }
+       else{
+         qnor = limit - cil;
+       }
+       qlim = limit;
        if(tau[i] <= limit){
          relocate_sample_i = relocate_sample_i + 1;
-         double rel_diff = (limit - tau[i]) / (limit - cil);
-         relocating_magnitude = rel_diff * mmax * above;
+         //double rel_diff = (limit - tau[i]) / (limit - cil);
+         double rel_diff = R::pbeta((limit - tau[i]) / qnor, 2, 2, 1, 0) / 2.0;
+         //relocating_magnitude = rel_diff * mmax * qdir;
+         relocating_magnitude = 2 * rel_diff * mmax * qdir;
        }
      }
      else if(qpos == 1){
-       limit += ciu - qran * (ciu - cil);
+       if(qlim_exists == 1){
+         double reg_qlim = parameters["qlim"];
+         limit += reg_qlim;
+       }
+       else{
+         limit += ciu - qran * (ciu - cil);
+       }
+       if(qnor_exists == 1){
+         double reg_qnor = parameters["qnor"];
+         qnor = reg_qnor;
+       }
+       else{
+         qnor = ciu - limit;
+       }
+       qlim = limit;
        if(tau[i] >= limit){
          relocate_sample_i = relocate_sample_i + 1;
-         double rel_diff = (tau[i] - limit) / (ciu - limit);
-         relocating_magnitude = rel_diff * mmax * above;
+         //double rel_diff = (tau[i] - limit) / (ciu - limit);
+         double rel_diff = R::pbeta((tau[i] - limit) / qnor, 2, 2, 1, 0) / 2.0;
+         //relocating_magnitude = rel_diff * mmax * qdir;
+         relocating_magnitude = 2 * rel_diff * mmax * qdir;
        }
      }
    }
@@ -760,14 +877,18 @@ List simulate_eqa_data2(List parameters, int type = 1, bool AR = false, bool inc
                                      Named("R") = R,
                                      Named("cvx") = cvx,
                                      Named("cvy") = cvy,
+                                     Named("sdx") = base_x,
+                                     Named("sdy") = base_y,
                                      Named("cil") = cil,
                                      Named("ciu") = ciu,
-                                     Named("dist") = dist,
-                                     Named("df_tau") = df_tau,
-                                     Named("dist") = dist,
-                                     Named("error_dist") = error_dist,
                                      Named("dfx") = dfx,
                                      Named("dfy") = dfy,
+                                     Named("qpos") = qpos,
+                                     Named("qran") = qran,
+                                     Named("qdir") = qdir,
+                                     Named("qlim") = qlim,
+                                     Named("qnor") = qnor,
+                                     Named("mmax") = mmax,
                                      Named("md_method") = md_method,
                                      Named("mar_prob") = mar_prob,
                                      Named("mnar_threshold") = mnar_threshold);

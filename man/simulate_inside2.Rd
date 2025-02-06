@@ -10,7 +10,8 @@ simulate_inside2(
   level = 0.95,
   extrapolate_ok = FALSE,
   shift = FALSE,
-  attempt_fast = FALSE
+  attempt_fast = FALSE,
+  include_deming = FALSE
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ be simulated from custom non-linear functions. Note that \code{cil} and \code{ci
 \item{shift}{A \code{logical} value. If \code{TRUE}, the roles of \code{MP_A} and \code{MP_B} shift if \code{lambda < 0.5}.}
 
 \item{attempt_fast}{A \code{logical} value. If \code{TRUE}, the predictions are attempted speeded up.}
+
+\item{include_deming}{A \code{logical} value. If \code{TRUE}, the inside rates based on Deming regression are also included.}
 }
 \value{
 An \code{integer} vector of length \code{m}.

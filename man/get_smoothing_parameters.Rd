@@ -4,7 +4,20 @@
 \alias{get_smoothing_parameters}
 \title{Calculate Smoothing Parameters}
 \usage{
-get_smoothing_parameters(y, weights, B, BTB, BTy, Omega, df, lambda, df_max)
+get_smoothing_parameters(
+  y,
+  weights,
+  B,
+  BTB,
+  BTy,
+  Omega,
+  df,
+  lambda,
+  df_max,
+  method = "loocv",
+  sg = c(0.38, 1.5),
+  smudge = 1.2
+)
 }
 \description{
 This function is used internally for smoothing parameters of \code{smoothing_spline()}.

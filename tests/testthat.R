@@ -7,6 +7,7 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
+suppressWarnings(library(data.table))
 library(smooth.commutability)
 
 test_check("smooth.commutability")

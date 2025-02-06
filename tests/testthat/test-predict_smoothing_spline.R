@@ -37,6 +37,7 @@ set.seed(99)
 test_data_cs_1 <- simulate_eqa_data2(parameters = list(n = 25, R = 3, cvx = 0.01, cvy = 0.01, cve = 0, cil = 2, ciu = 10), type = 1, AR = FALSE) |> setDT()
 test_data_cs_2 <- simulate_eqa_data2(parameters = list(n = 25, R = 3, cvx = 0.01, cvy = 0.01, cve = 0, cil = 2, ciu = 10), type = 2, AR = FALSE) |> setDT()
 test_data_cs_3 <- simulate_eqa_data2(parameters = list(n = 25, R = 3, cvx = 0.01, cvy = 0.01, cve = 0, cil = 2, ciu = 10), type = 3, AR = FALSE) |> setDT()
+
 test_data_eq_1 <- simulate_eq_data(x = c(1.5, 7, 11), type = 1)
 test_data_eq_2 <- simulate_eq_data(x = c(1.5, 7, 11), type = 2)
 test_data_eq_3 <- simulate_eq_data(x = c(1.5, 7, 11), type = 3)
@@ -44,14 +45,17 @@ test_data_eq_3 <- simulate_eq_data(x = c(1.5, 7, 11), type = 3)
 ss_fit_1 <- smoothing_spline(data = test_data_cs_1, df = 5)
 ss_fit_2 <- smoothing_spline(data = test_data_cs_2, df = 5)
 ss_fit_3 <- smoothing_spline(data = test_data_cs_3, df = 5)
+ss_fit_4 <- smoothing_spline(data = test_data_cs_2, df = 2)
 
 ss_fit_1_ref <- smooth.spline(x = test_data_cs_1$MP_B, test_data_cs_1$MP_A, df = 5, keep.stuff = TRUE, all.knots = c(0, ss_fit_1$interior_knots, 1))
 ss_fit_2_ref <- smooth.spline(x = test_data_cs_2$MP_B, test_data_cs_2$MP_A, df = 5, keep.stuff = TRUE, all.knots = c(0, ss_fit_2$interior_knots, 1))
 ss_fit_3_ref <- smooth.spline(x = test_data_cs_3$MP_B, test_data_cs_3$MP_A, df = 5, keep.stuff = TRUE, all.knots = c(0, ss_fit_3$interior_knots, 1))
+ss_fit_4_ref <- smooth.spline(x = test_data_cs_2$MP_B, test_data_cs_2$MP_A, df = 2, keep.stuff = TRUE, all.knots = c(0, ss_fit_2$interior_knots, 1))
 
 ss_pred_1 <- predict_smoothing_spline(data = test_data_cs_1, new_data = test_data_eq_1, df = 5, level = 0.95, rounding = 6)
 ss_pred_2 <- predict_smoothing_spline(data = test_data_cs_2, new_data = test_data_eq_2, df = 5, level = 0.95, rounding = 6)
 ss_pred_3 <- predict_smoothing_spline(data = test_data_cs_3, new_data = test_data_eq_3, df = 5, level = 0.95, rounding = 6)
+ss_pred_4 <- predict_smoothing_spline(data = test_data_cs_2, new_data = test_data_eq_2, df = 2, level = 0.95, rounding = 6)
 
 ss_pred_1_ref <- predict(ss_fit_1_ref, x = test_data_eq_1$MP_B)
 ss_pred_2_ref <- predict(ss_fit_2_ref, x = test_data_eq_2$MP_B)
@@ -78,6 +82,7 @@ test_that("Check if OLS prediction intervals are wider", {
   expect_true(object = all(ols_pred_2$upr - ols_pred_2$lwr > ss_pred_2$upr - ss_pred_2$lwr))
   expect_true(object = all(ols_pred_3$upr - ols_pred_3$lwr > ss_pred_3$upr - ss_pred_3$lwr))
 })
+
 
 xs <- sample(x = c(1.5, 2:10, 10.5, 11), size = 12, replace = F)
 test_data_eq_4 <- simulate_eq_data(x = xs, type = 3)
@@ -114,4 +119,5 @@ test_that("Check stuff when SampleID missing",{
   expect_true(all(as.integer(ss_pred_6$MP_A > ss_pred_6$lwr & ss_pred_6$MP_A < ss_pred_6$upr) == ss_pred_6$inside))
   expect_true(all(abs(ss_pred_6$prediction - ss_pred_6_ref) < 0.01))
 })
+
 

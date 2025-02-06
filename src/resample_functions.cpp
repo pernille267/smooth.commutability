@@ -28,7 +28,6 @@ CharacterVector unique_preserve_order(CharacterVector x) {
       result.push_back(x[i]);
     }
   }
-
   return result;
 }
 
@@ -39,10 +38,10 @@ CharacterVector unique_preserve_order(CharacterVector x) {
 //'
 //' @param data \code{list} or \code{data.table}. Must contain the following variables:
 //' \itemize{
-//'   \item \code{SampleID}: Sample identifiers. Must be \code{character}.
-//'   \item \code{ReplicateID}: Replicate measurement identifiers within samples. Must be \code{character}.
-//'   \item \code{MP_A}: Measurement results for the IVD-MD used as response variable.
-//'   \item \code{MP_B}: Measurement results for the IVD-MD used as predictor variable.
+//'   \item \code{SampleID:} Sample identifiers. Must be a \code{character} vector.
+//'   \item \code{ReplicateID:} Replicate measurement identifiers within samples. Must be \code{character} vector.
+//'   \item \code{MP_A:} Measurement results for the IVD-MD used as response variable.
+//'   \item \code{MP_B:} Measurement results for the IVD-MD used as predictor variable.
 //' }
 //'
 //' @details
@@ -50,15 +49,14 @@ CharacterVector unique_preserve_order(CharacterVector x) {
 //' used because these imprecision estimates are based on the whole dataset.
 //' These five imprecision estimates are calculated:
 //' \itemize{
-//'   \item{\code{Var_A: }}{Pooled variance of all sample-variances based on MP_A}
-//'   \item{\code{Var_B: }}{Pooled variance of all sample-variances based on MP_B}
-//'   \item{\code{CV_A: }}{CV estimate based on Var_A and the grand mean of all measurements from MP_A}
-//'   \item{\code{CV_B: }}{CV estimate based on Var_B and the grand mean of all measurements from MP_B}
-//'   \item{\code{lambda: }}{Ratio of pooled variances Var_A and Var_B}
+//'   \item \code{Var_A:} Pooled variance of all sample-variances based on \code{MP_A}
+//'   \item \code{Var_B:} Pooled variance of all sample-variances based on \code{MP_B}
+//'   \item \code{CV_A:} CV estimate based on Var_A and the grand mean of all measurements from \code{MP_A}
+//'   \item \code{CV_B:} CV estimate based on Var_B and the grand mean of all measurements from \code{MP_B}
+//'   \item \code{lambda:} Ratio of pooled variances \code{Var_A} and \code{Var_B}
 //' }
-//' CV values \code{CV_A} and \code{CV_B} can also be represented in percent.
-//' To convert these to percentage values, one just multiply their raw results by 100%.
-//'
+//' Coefficient of Variation (CV) values \code{CV_A} and \code{CV_B} can also be represented as percentages.
+//' To convert to percentage values, multiply their raw results by 100.
 //'
 //' @return A \code{list} of length \code{5} with the following point imprecision estimates:
 //'         \code{Var_A}, \code{Var_B}, \code{CV_A}, \code{CV_B} and \code{lambda}.
@@ -74,6 +72,7 @@ CharacterVector unique_preserve_order(CharacterVector x) {
 
  // [[Rcpp::export]]
 List global_precision_estimates2(List data) {
+
   // Extract data columns
   CharacterVector SampleID = data["SampleID"];
   NumericVector MS_A = data["MP_A"];
@@ -260,13 +259,10 @@ List resample_samples2(List data) {
 //' Resample cluster statistics based on EQA clinical sample data
 //'
 //' @title Resample cluster statistics based on EQA clinical sample data
-//' @name resample_fun_samples2
+//' @name resample_fun_of_samples
 //'
 //' @param data A \code{list} or a \code{data.table}. The mean-of-replicates
 //'        clinical sample data. Must contain \code{SampleID}, \code{MP_A} and \code{MP_B}.
-//'        The ID variable \code{SampleID} must be \code{character}.
-//' @param weight_data A \code{list} or a \code{data.table}. The weight data based
-//'        on the clinical sample data. Must contain \code{SampleID}, \code{MP_A} and \code{MP_B}.
 //'        The ID variable \code{SampleID} must be \code{character}.
 //'
 //' @details
@@ -278,36 +274,37 @@ List resample_samples2(List data) {
 //'   \item \code{predict_smoothing_splines()} to estimate inside rates for a IVD-MD comparison
 //'   \item \code{smoothing_spline()} to estimate bootstrap distribution of LOO-CV chosen effective degrees of freedom.
 //' }
-//' If you do not have weight data available that you seek to resample jointly,
-//' just pass \code{data} as both first and second argument.
-//' See example under documentation of \code{resample_fun_samples2_all}.
 //'
 //' @return
-//' A \code{list} of length two containing the resampled cluster statistics based on
-//' \code{data} and \code{weight_data}. The output \code{list} have the following structure:
-//' \itemize{
-//'   \item \code{resampled_cs_data}: Contains the resampled \code{data}
-//'   \item \code{resampled_weight_data}: Contains the resampled \code{weight_data}
-//' }
-//'
+//' A \code{list} that contains the resampled \code{data}.
 //'
 //' @examples
 //' library(data.table)
 //' fictive_data <- simulate_eqa_data2(list(n = 25, R = 3, cvx = 0.01, cvy = 0.02))
-//' fictive_weight_data <- simulate_eqa_data2(list(n = 25, R = 3, cvx = 0.03, cvy = 0.02))
-//' resampled_data <- resample_fun_samples2(fictive_data, fictive_weight_data)
+//' resampled_data <- resample_fun_of_samples(fictive_data)
 //' setDT(resampled_data)
 //' print(resampled_data)
 
 // [[Rcpp::export]]
-List resample_fun_samples2(List data, List weight_data) {
+List resample_fun_of_samples(List data) {
+
+  // Error handling
+  if (data.length() == 0) {
+    stop("Input data is empty");
+  }
+  if (!data.containsElementNamed("SampleID") ||
+      !data.containsElementNamed("MP_A") ||
+      !data.containsElementNamed("MP_B")) {
+      stop("Missing required columns in input data");
+  }
+
+  // Initialization
   CharacterVector samples = data["SampleID"];
   NumericVector MS_A = data["MP_A"];
   NumericVector MS_B = data["MP_B"];
-  NumericVector W_A = weight_data["MP_A"];
-  NumericVector W_B = weight_data["MP_B"];
   int n = samples.size();
 
+  // Resample samples
   CharacterVector resampled_samples = sample(samples, n, true);
 
   // Create a map for faster lookup
@@ -322,12 +319,10 @@ List resample_fun_samples2(List data, List weight_data) {
     output_size += sample_indices[resampled_samples[i]].size();
   }
 
-  // Set up ...
+  // Set up new empty vectors
   CharacterVector new_samples(output_size);
   NumericVector new_MS_A(output_size);
   NumericVector new_MS_B(output_size);
-  NumericVector new_W_A(output_size);
-  NumericVector new_W_B(output_size);
 
   // Fill output vectors
   int counter = 0;
@@ -338,41 +333,27 @@ List resample_fun_samples2(List data, List weight_data) {
       new_samples[counter] = samples[i];
       new_MS_A[counter] = MS_A[idx];
       new_MS_B[counter] = MS_B[idx];
-      new_W_A[counter] = W_A[idx];
-      new_W_B[counter] = W_B[idx];
       ++counter;
     }
   }
 
-  // Output 1
+  // Structure of output
   List resampled_cs_data = List::create(Named("SampleID") = new_samples,
                                         Named("MP_A") = new_MS_A,
                                         Named("MP_B") = new_MS_B);
 
-  // Output 2
-  List resampled_weight_data = List::create(Named("SampleID") = new_samples,
-                                            Named("MP_A") = new_W_A,
-                                            Named("MP_B") = new_W_B);
 
-  // Merged outputs
-  return List::create(
-    Named("resampled_cs_data") = resampled_cs_data,
-    Named("resampled_weight_data") = resampled_weight_data
-  );
+  return resampled_cs_data;
 }
 
 //' Resample cluster statistics based on EQA clinical sample data for each IVD-MD comparison
 //'
 //' @title Resample cluster statistics based on EQA clinical sample data for each IVD-MD comparison
-//' @name resample_fun_samples2_all
+//' @name resample_fun_of_samples_all
 //'
-//' @param data A \code{list} or a \code{data.table}. The mean-of-replicates
+//' @param data A \code{list} or a \code{data.table}. The mean-of-replicates (MOR)
 //'        clinical sample data. Must contain \code{comparison} \code{SampleID},
 //'        \code{MP_A} and \code{MP_B}. The ID variables \code{comparison}
-//'        and \code{SampleID} must be \code{character}.
-//' @param weight_data A \code{list} or a \code{data.table}. The weight data based
-//'        on the clinical sample data. Must contain \code{comparison} \code{SampleID},
-//'        \code{MP_A} and \code{MP_B}.The ID variables \code{comparison}
 //'        and \code{SampleID} must be \code{character}.
 //'
 //' @details
@@ -384,17 +365,9 @@ List resample_fun_samples2(List data, List weight_data) {
 //'   \item \code{predict_smoothing_splines()} to estimate inside rates for each IVD-MD comparison
 //'   \item \code{smoothing_spline()} to estimate bootstrap distribution of LOO-CV chosen effective degrees of freedom.
 //' }
-//' If you do not have weight data available that you seek to resample jointly,
-//' just pass \code{data} as both first and second argument. See example.
 //'
 //' @return
-//' A \code{list} of length two containing the resampled cluster statistics based on
-//' \code{data} and \code{weight_data}. The output \code{list} have the following structure:
-//' \itemize{
-//'   \item \code{resampled_cs_data}: Contains the resampled \code{data}
-//'   \item \code{resampled_weight_data}: Contains the resampled \code{weight_data}
-//' }
-//'
+//' A \code{list} that contains the resampled \code{data}.
 //'
 //' @examples
 //' library(data.table)
@@ -403,18 +376,29 @@ List resample_fun_samples2(List data, List weight_data) {
 //' fictive_data1$comparison <- rep("A - B", length(fictive_data1$MP_B))
 //' fictive_data2$comparison <- rep("A - C", length(fictive_data2$MP_B))
 //' fictive_data <- rbindlist(list(fictive_data1, fictive_data2))
-//' resampled_data <- resample_fun_samples2_all(fictive_data, fictive_data)
+//' resampled_data <- resample_fun_of_samples_all(fictive_data)
 //' setDT(resampled_data)
 //' print(resampled_data)
 
 // [[Rcpp::export]]
-List resample_fun_samples2_all(List data, List weight_data) {
+List resample_fun_of_samples_all(List data) {
+
+ // Error handling
+ if (data.length() == 0) {
+   stop("Input data is empty");
+ }
+ if (!data.containsElementNamed("comparison") ||
+     !data.containsElementNamed("SampleID") ||
+     !data.containsElementNamed("MP_A") ||
+     !data.containsElementNamed("MP_B")) {
+     stop("Missing required columns in input data");
+ }
+
+ // Initialization
  CharacterVector comparison = data["comparison"];
  CharacterVector samples = data["SampleID"];
  NumericVector MS_A = data["MP_A"];
  NumericVector MS_B = data["MP_B"];
- NumericVector W_A = weight_data["MP_A"];
- NumericVector W_B = weight_data["MP_B"];
  CharacterVector unique_comparison = unique_preserve_order(comparison);
  int n = unique_comparison.size();
  int N = comparison.size();
@@ -425,62 +409,45 @@ List resample_fun_samples2_all(List data, List weight_data) {
    comparison_indices[comparison[i]].push_back(i);
  }
 
+ // Set up new empty output vectors
  CharacterVector new_comparison(N);
  CharacterVector new_samples(N);
  NumericVector new_MS_A(N);
  NumericVector new_MS_B(N);
- NumericVector new_W_A(N);
- NumericVector new_W_B(N);
 
  // Fill output vectors
  int counter = 0;
  for (int i = 0; i < n; ++i) {
    int sub_counter = 0;
-   String current_comparison = comparison[i];
+   String current_comparison = unique_comparison[i];
    const std::vector<int>& indices = comparison_indices[current_comparison];
    int output_size = indices.size();
    CharacterVector filter_samples(output_size);
    NumericVector filter_MS_A(output_size);
    NumericVector filter_MS_B(output_size);
-   NumericVector filter_W_A(output_size);
-   NumericVector filter_W_B(output_size);
    for (int idx : indices) {
      filter_samples[sub_counter] = samples[idx];
      filter_MS_A[sub_counter] = MS_A[idx];
      filter_MS_B[sub_counter] = MS_B[idx];
-     filter_W_A[sub_counter] = W_A[idx];
-     filter_W_B[sub_counter] = W_B[idx];
      ++sub_counter;
    }
    List data_in = List::create(Named("SampleID") = filter_samples,
                                Named("MP_A") = filter_MS_A,
                                Named("MP_B") = filter_MS_B);
 
-   List weight_data_in = List::create(Named("SampleID") = filter_samples,
-                                      Named("MP_A") = filter_W_A,
-                                      Named("MP_B") = filter_W_B);
-
-   List out_data_both = resample_fun_samples2(data_in, weight_data_in);
-   List out_data = out_data_both["resampled_cs_data"];
-   List out_weight_data = out_data_both["resampled_weight_data"];
+   List out_data = resample_fun_of_samples(data_in);
 
    CharacterVector new_filter_samples = out_data["SampleID"];
    NumericVector new_filter_MS_A = out_data["MP_A"];
    NumericVector new_filter_MS_B = out_data["MP_B"];
-   NumericVector new_filter_W_A = out_weight_data["MP_A"];
-   NumericVector new_filter_W_B = out_weight_data["MP_B"];
 
    for (int j = 0; j < output_size; ++j) {
      new_comparison[counter] = unique_comparison[i];
      new_samples[counter] = new_filter_samples[j];
      new_MS_A[counter] = new_filter_MS_A[j];
      new_MS_B[counter] = new_filter_MS_B[j];
-     new_W_A[counter] = new_filter_W_A[j];
-     new_W_B[counter] = new_filter_W_B[j];
      ++counter;
    }
-
-
  }
 
  List resampled_cs_data = List::create(Named("comparison") = new_comparison,
@@ -488,41 +455,33 @@ List resample_fun_samples2_all(List data, List weight_data) {
                                        Named("MP_A") = new_MS_A,
                                        Named("MP_B") = new_MS_B);
 
- List resampled_weight_data = List::create(Named("comparison") = new_comparison,
-                                           Named("SampleID") = new_samples,
-                                           Named("MP_A") = new_W_A,
-                                           Named("MP_B") = new_W_B);
-
-
- return List::create(
-   Named("resampled_cs_data") = resampled_cs_data,
-   Named("resampled_weight_data") = resampled_weight_data
- );
+ return resampled_cs_data;
 }
 
 //' Resample imprecision estimates based on clustered EQA clinical sample data
 //'
 //' @title Resample imprecision estimates based on clustered EQA clinical sample data
-//' @name resample_imprecision2
+//' @name resample_imprecision
 //'
 //' @param data A \code{list} or a \code{data.table}. Must contain \code{SampleID},
 //'        \code{ReplicateID}, \code{MP_A} and \code{MP_B}. The ID variables \code{SampleID}
 //'        and \code{ReplicateID} must be of character type for the function to operate correctly.
 //'
 //' @details
-//' This function is a very efficient method to resample repeatability in clinical sample data.
+//' This function is a very efficient method to resample repeatability measure estimates
+//' based on clinical sample data in \code{data}.
 //'
 //' @return A \code{list} containing the resampled imprecision.
 //'
 //' @examples
 //' library(data.table)
 //' fictive_data <- simulate_eqa_data2(list(n = 25, R = 3, cvx = 0.01, cvy = 0.01), AR = TRUE)
-//' impr <- replicate(n = 5, expr = resample_imprecision2(fictive_data), simplify = FALSE)
+//' impr <- replicate(n = 5, expr = resample_imprecision(fictive_data), simplify = FALSE)
+//' impr <- rbindlist(impr)
 //' print(impr)
 
-
 // [[Rcpp::export]]
-List resample_imprecision2(List data){
+List resample_imprecision(List data){
   List resampled_data = resample_samples2(data);
   List output = global_precision_estimates2(resampled_data);
   return output;

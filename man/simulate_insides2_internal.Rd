@@ -11,7 +11,8 @@ simulate_insides2_internal(
   level = 0.95,
   extrapolate_ok = FALSE,
   shift = FALSE,
-  attempt_fast = FALSE
+  attempt_fast = FALSE,
+  include_deming = FALSE
 )
 }
 \description{

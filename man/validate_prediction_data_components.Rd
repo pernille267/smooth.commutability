@@ -4,7 +4,7 @@
 \alias{validate_prediction_data_components}
 \title{Check input of predict_smoothing_spline}
 \usage{
-validate_prediction_data_components(data, new_data, weight_data)
+validate_prediction_data_components(data, new_data)
 }
 \description{
 This function is used internally for error handling regarding bad input.

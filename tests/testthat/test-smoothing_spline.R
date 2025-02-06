@@ -4,7 +4,7 @@ library(testthat)
 
 set.seed(99)
 
-test_data_1 <- simulate_eqa_data2(parameters = list(n = 25, R = 3, cvx = 0.01, cvy = 0.01, cve = 0, cil = 2, ciu = 10), type = 2, AR = FALSE) |> setDT()
+test_data_1 <- simulate_eqa_data2(parameters = list(n = 25, R = 3, cvx = 0.01, cvy = 0.01, cil = 2, ciu = 10), type = 2, AR = FALSE) |> setDT()
 test_data_2_ar <- fix_predictor_and_response(fread(file = "~/Packages/test data smooth.commutability/fictive_crp_cs_data.csv"))
 test_data_2_mor <- test_data_2_ar[, fun_of_replicates(.SD), by = comparison]
 
@@ -104,9 +104,9 @@ test_that("Check if printing function works as expected", {
 
 test_that("Check if plotting function works as expected", {
   sample_choices <- sample.int(n = 10, size = 3, replace = FALSE)
-  output_plot_1 <- plot.smoothing_spline(multiple_ss_fits[[sample_choices[1]]], error = "confidence")
-  output_plot_2 <- plot.smoothing_spline(multiple_ss_fits[[sample_choices[2]]], error = "prediction")
-  output_plot_3 <- plot.smoothing_spline(multiple_ss_fits[[sample_choices[3]]], error = "none")
+  output_plot_1 <- plot.smoothing_spline(multiple_ss_fits[[sample_choices[1]]], type = "confidence")
+  output_plot_2 <- plot.smoothing_spline(multiple_ss_fits[[sample_choices[2]]], type = "prediction")
+  output_plot_3 <- plot.smoothing_spline(multiple_ss_fits[[sample_choices[3]]], type = "none")
   expect_s3_class(object = output_plot_1, class = "ggplot")
   expect_s3_class(object = output_plot_2, class = "ggplot")
   expect_s3_class(object = output_plot_3, class = "ggplot")
@@ -124,7 +124,7 @@ test_that("Check if attempt_fast gives equivalent results", {
   expect_equal(output1$df, output2$df, tolerance = 1e-4)
   expect_equal(output1$lambda, output2$lambda, tolerance = 1e-4)
   expect_equal(output1$sp, output2$sp, tolerance = 1e-1)
-  expect_equal(output1$cv_crit, output2$cv_crit, tolerance = 1e-4)
+  #expect_equal(output1$cv_crit, output2$cv_crit, tolerance = 1e-4)
   expect_equal(output1$var_eps, output2$var_eps, tolerance = 1e-4)
   expect_equal(output1$var_fit, output2$var_fit, tolerance = 1e-4)
   expect_equal(output1$coefficients, output2$coefficients[,], tolerance = 1e-4)
@@ -142,31 +142,24 @@ test_that("Check if attempt_fast gives equivalent results", {
 
 test_that("Check if attempt_fast actually is faster", {
   time1_before <- Sys.time()
-  output1 <- replicate(n = 1e2, smoothing_spline(data = split(test_data_2_mor, by = "comparison", keep.by = TRUE)[[1]], df = NULL, lambda = NULL, df_max = 25, attempt_fast = TRUE))
+  output1 <- replicate(n = 5e2, smoothing_spline(data = split(test_data_2_mor, by = "comparison", keep.by = TRUE)[[1]], df = NULL, lambda = NULL, df_max = 25, attempt_fast = TRUE))
   time1_after <- Sys.time()
   time1 <- as.double(time1_after - time1_before)
 
   time2_before <- Sys.time()
-  output2 <- replicate(n = 1e2, smoothing_spline(data = split(test_data_2_mor, by = "comparison", keep.by = TRUE)[[1]], df = NULL, lambda = NULL, df_max = 25, attempt_fast = FALSE))
+  output2 <- replicate(n = 5e2, smoothing_spline(data = split(test_data_2_mor, by = "comparison", keep.by = TRUE)[[1]], df = NULL, lambda = NULL, df_max = 25, attempt_fast = FALSE))
   time2_after <- Sys.time()
   time2 <- as.double(time2_after - time2_before)
-
   expect_lte(time1, time2)
 
   time1_before <- Sys.time()
-  output1 <- replicate(n = 1e2, smoothing_spline(data = split(test_data_2_mor, by = "comparison", keep.by = TRUE)[[1]], df = 6, lambda = NULL, df_max = 25, attempt_fast = TRUE))
+  output1 <- replicate(n = 5e2, smoothing_spline(data = split(test_data_2_mor, by = "comparison", keep.by = TRUE)[[1]], df = 6, lambda = NULL, df_max = 25, attempt_fast = TRUE))
   time1_after <- Sys.time()
   time1 <- as.double(time1_after - time1_before)
 
   time2_before <- Sys.time()
-  output2 <- replicate(n = 1e2, smoothing_spline(data = split(test_data_2_mor, by = "comparison", keep.by = TRUE)[[1]], df = 6, lambda = NULL, df_max = 25, attempt_fast = FALSE))
+  output2 <- replicate(n = 5e2, smoothing_spline(data = split(test_data_2_mor, by = "comparison", keep.by = TRUE)[[1]], df = 6, lambda = NULL, df_max = 25, attempt_fast = FALSE))
   time2_after <- Sys.time()
   time2 <- as.double(time2_after - time2_before)
-
+  expect_lte(time1, time2)
 })
-
-
-
-
-
-

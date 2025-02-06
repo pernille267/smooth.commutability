@@ -4,21 +4,27 @@
 \alias{estimate_zetas_ss}
 \title{Estimate Comparison-wise \eqn{\zeta} using Smoothing Splines}
 \usage{
-estimate_zetas_ss(data, df = NULL, use_weights = TRUE, na_rm = TRUE)
+estimate_zetas_ss(data, df = NULL, weighted = FALSE, na_rm = TRUE)
 }
 \arguments{
-\item{data}{A \code{data.table} object. Must contain variables/columns \code{comparison}, \code{SampleID}, \code{ReplicateID}, \code{MP_A} and \code{MP_B}}
+\item{data}{A \code{data.table} object. Must contain columns \code{comparison},
+\code{SampleID}, \code{ReplicateID}, \code{MP_A} and \code{MP_B}}
 
-\item{df}{A \code{double} between \code{2} and \code{n}, where \code{n} is the number of unique elements of \code{SampleID}.
-Otherwise, it must be a \code{numeric} vector of length equal to the number of unique elements in \code{comparison}.
-If \code{df} is set to 2 or smaller, ordinary least squares regression is used to estimate \eqn{\zeta}, because this estimate is more reliable in these cases.}
+\item{df}{A \code{double} between \code{2} and \code{n}, where \code{n} is the
+number of unique elements of \code{SampleID}. Otherwise, it must be a
+\code{numeric} vector of length equal to the number of unique elements
+in \code{comparison}.}
 
-\item{use_weights}{A \code{logical} value. If \code{TRUE}, weights are used to calculate \eqn{\zeta}. Weights are automatically determined.}
+\item{weighted}{A \code{logical} value. If \code{TRUE}, iteratively estimated
+weights are used to fit the smoothing spline.}
 
-\item{na_rm}{A \code{logical} value. Should NA values be removed before estimating zeta hat?}
+\item{na_rm}{A \code{logical} value. Should NA values be removed before
+estimating \eqn{\zeta}?}
 }
 \value{
-A \code{list} with one variable \code{zeta}, which is a double signifying the estimate of \eqn{\zeta}.
+A \code{data.table} with two variables. The first variable is the \code{comparison}
+variable. The second variable is the corresponding estimate of \eqn{\zeta},
+based on \code{df} and \code{weighted}.
 }
 \description{
 Estimate Comparison-wise \eqn{\zeta} using Smoothing Splines

@@ -12,8 +12,10 @@ simulate_insides2(
   extrapolate_ok = FALSE,
   shift = FALSE,
   attempt_fast = FALSE,
+  include_deming = FALSE,
   parallel = TRUE,
-  max_cores = 4
+  max_cores = 4,
+  seed = 99
 )
 }
 \arguments{
@@ -33,9 +35,13 @@ be simulated from custom non-linear functions. Note that \code{cil} and \code{ci
 
 \item{attempt_fast}{A \code{logical} value. If \code{TRUE}, the predictions are attempted speeded up.}
 
+\item{include_deming}{A \code{logical} value. If \code{TRUE}, the inside rates based on Deming regression are also included.}
+
 \item{parallel}{A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}). If set to \code{TRUE}, simulations are done on multiple cores on your local machine for the duration of the function call.}
 
 \item{max_cores}{An \code{integer} value between \code{2} and the number of cores you have on your computer. If you wish to use fewer cores than is on your computer, you should specify this here.}
+
+\item{seed}{An \code{integer} value. If you wish to set a seed for reproducibility, set it here. If you do not want reproducibility, set this to \code{NULL}.}
 }
 \value{
 A \code{list}.

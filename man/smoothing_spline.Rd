@@ -11,7 +11,9 @@ smoothing_spline(
   lambda = NULL,
   df_max = 7.5,
   attempt_fast = FALSE,
-  na_rm = TRUE
+  na_rm = TRUE,
+  additional_parameters = list(method = "gcv", smudge = 1.2, c_star_min = 0.38,
+    c_star_max = 1.5, tol = 0.5, window = 10, iter = 1)
 )
 }
 \arguments{
@@ -36,6 +38,8 @@ If n-fold cross-validation is used to obtain the optimal effective number of deg
 to derive \code{df} and \code{lambda}. It is generally not recommended to set this to \code{TRUE}.}
 
 \item{na_rm}{A \code{logical} value. If set to \code{TRUE}, NA values are removed before fitting the smoothing spline.}
+
+\item{additional_parameters}{A \code{list} containing additional alternatives for the smoothing spline fit.}
 }
 \value{
 A \code{list} containing the components of the smoothing spline fit, including:
@@ -63,7 +67,9 @@ A \code{list} containing the components of the smoothing spline fit, including:
         These components are often utilized in subsequent analyses and visualizations.
 }
 \description{
-This function fits a smoothing spline model to the provided data using an O'Sullivan penalty matrix. It is designed to work with various data types and offers flexibility in model tuning through degrees of freedom (`df`) and penalty parameter (`lambda`).
+This function fits a smoothing spline model to the provided data using an O'Sullivan penalty matrix.
+It is designed to work with various data types and offers flexibility in model tuning through degrees
+of freedom (`df`) and penalty parameter (`lambda`).
 }
 \examples{
 # Example using a dataset with columns MP_B and MP_A

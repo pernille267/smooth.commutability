@@ -5,14 +5,16 @@
 \title{Internal Function for Faster Smoothing Spline Fitting}
 \usage{
 fast_smoothing_spline(
-  orig_x,
-  y,
   x,
+  y,
+  u,
   weights,
   all_knots,
   df = NULL,
   lambda = NULL,
-  df_max = 7.5
+  df_max = 7.5,
+  additional_parameters = list(method = "gcv", smudge = 1.2, c_star_min = 0.38,
+    c_star_max = 1.5, tol = 0.5, window = 10, iter = 1)
 )
 }
 \description{

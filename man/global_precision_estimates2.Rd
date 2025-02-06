@@ -6,10 +6,10 @@
 \arguments{
 \item{data}{\code{list} or \code{data.table}. Must contain the following variables:
 \itemize{
-  \item \code{SampleID}: Sample identifiers. Must be \code{character}.
-  \item \code{ReplicateID}: Replicate measurement identifiers within samples. Must be \code{character}.
-  \item \code{MP_A}: Measurement results for the IVD-MD used as response variable.
-  \item \code{MP_B}: Measurement results for the IVD-MD used as predictor variable.
+  \item \code{SampleID:} Sample identifiers. Must be a \code{character} vector.
+  \item \code{ReplicateID:} Replicate measurement identifiers within samples. Must be \code{character} vector.
+  \item \code{MP_A:} Measurement results for the IVD-MD used as response variable.
+  \item \code{MP_B:} Measurement results for the IVD-MD used as predictor variable.
 }}
 }
 \value{
@@ -25,14 +25,14 @@ Calculates five relevant global imprecision estimates. The term global is
 used because these imprecision estimates are based on the whole dataset.
 These five imprecision estimates are calculated:
 \itemize{
-  \item{\code{Var_A: }}{Pooled variance of all sample-variances based on MP_A}
-  \item{\code{Var_B: }}{Pooled variance of all sample-variances based on MP_B}
-  \item{\code{CV_A: }}{CV estimate based on Var_A and the grand mean of all measurements from MP_A}
-  \item{\code{CV_B: }}{CV estimate based on Var_B and the grand mean of all measurements from MP_B}
-  \item{\code{lambda: }}{Ratio of pooled variances Var_A and Var_B}
+  \item \code{Var_A:} Pooled variance of all sample-variances based on \code{MP_A}
+  \item \code{Var_B:} Pooled variance of all sample-variances based on \code{MP_B}
+  \item \code{CV_A:} CV estimate based on Var_A and the grand mean of all measurements from \code{MP_A}
+  \item \code{CV_B:} CV estimate based on Var_B and the grand mean of all measurements from \code{MP_B}
+  \item \code{lambda:} Ratio of pooled variances \code{Var_A} and \code{Var_B}
 }
-CV values \code{CV_A} and \code{CV_B} can also be represented in percent.
-To convert these to percentage values, one just multiply their raw results by 100%.
+Coefficient of Variation (CV) values \code{CV_A} and \code{CV_B} can also be represented as percentages.
+To convert to percentage values, multiply their raw results by 100.
 }
 \examples{
 \dontrun{

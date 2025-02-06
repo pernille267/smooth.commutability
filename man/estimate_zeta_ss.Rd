@@ -2,32 +2,36 @@
 % Please edit documentation in R/estimate_zeta_ss.R
 \name{estimate_zeta_ss}
 \alias{estimate_zeta_ss}
-\title{Estimate \eqn{\zeta} using Smoothing Splines}
+\title{Estimate \eqn{\zeta} Using Smoothing Splines}
 \usage{
-estimate_zeta_ss(
-  data,
-  df = NULL,
-  use_weights = FALSE,
-  simple_output = TRUE,
-  na_rm = TRUE
-)
+estimate_zeta_ss(data, df = NULL, weighted = FALSE, mor = FALSE, na_rm = TRUE)
 }
 \arguments{
-\item{data}{A \code{list} or \code{data.table} object. Must contain variables/columns \code{SampleID}, \code{ReplicateID}, \code{MP_A} and \code{MP_B}}
+\item{data}{A \code{list} or \code{data.table} object. Must contain columns,
+\code{SampleID}, \code{ReplicateID}, \code{MP_A} and \code{MP_B}.}
 
-\item{df}{A \code{double} between \code{2} and \code{n}, where \code{n} is the number of unique elements of \code{SampleID}. If \code{df} is set to 2 or smaller, ordinary least squares regression is used to estimate \eqn{\zeta}, because this estimate is more reliable in these cases.}
+\item{df}{A \code{double} between \code{2} and \code{n}, where \code{n} is the
+number of unique elements of \code{SampleID}. See details.}
 
-\item{use_weights}{A \code{logical} value. If \code{TRUE}, weights are used to calculate \eqn{\zeta}. Weights are automatically determined.}
+\item{weighted}{A \code{logical} value. If \code{TRUE}, iteratively estimated
+weights are used to fit the smoothing spline.}
 
-\item{simple_output}{A \code{logical} value. Set to \code{FALSE}, if all components of the zeta calculation is required.}
+\item{mor}{A \code{logical} value.}
 
-\item{na_rm}{A \code{logical} value. Should NA values be removed before estimating zeta hat?}
+\item{na_rm}{A \code{logical} value. Should NA values be removed before
+estimating \eqn{\zeta}?}
 }
 \value{
-A \code{list} with one variable \code{zeta}, which is a double signifying the estimate of \eqn{\zeta}.
+A \code{list} with one variable named \code{zeta}. This value is a \code{double}
+that signifies the smoothing spline estimate of \eqn{\zeta} based on \code{df}.
 }
 \description{
-Estimate \eqn{\zeta} using Smoothing Splines
+Estimate \eqn{\zeta} Using Smoothing Splines
+}
+\details{
+Estimates \eqn{\zeta} using the plug-in estimator
+
+\eqn{\hat{\zeta} = \frac{\hat{\sigma}^2 \cdot \frac{n + \mathrm{df}(c)}{n}}{\hat{\sigma}_v^2 + \hat{\sigma}_h^2 \frac{1}{N} \sum_{i=1}^{n}\sum_{r=1}^{R_i}[\hat{f}(x_{ir})]^2}}
 }
 \examples{
 print(1)

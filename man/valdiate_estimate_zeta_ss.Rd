@@ -4,14 +4,7 @@
 \alias{valdiate_estimate_zeta_ss}
 \title{Internal Function for validating entries}
 \usage{
-valdiate_estimate_zeta_ss(
-  data,
-  df,
-  complex,
-  advice,
-  error = TRUE,
-  funny = TRUE
-)
+valdiate_estimate_zeta_ss(data, df, weighted, error = FALSE)
 }
 \description{
 This function is used internally validate entries in estimate_zeta_ss.

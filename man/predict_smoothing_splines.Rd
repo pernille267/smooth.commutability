@@ -7,7 +7,7 @@
 predict_smoothing_splines(
   data,
   new_data = NULL,
-  weight_data = NULL,
+  weighted = FALSE,
   df = NULL,
   lambda = NULL,
   df_max = 7.5,
@@ -15,7 +15,11 @@ predict_smoothing_splines(
   level = 0.99,
   simultaneous = FALSE,
   negative_ok = TRUE,
-  rounding = 3L
+  attempt_fast = FALSE,
+  include_prediction_variance = FALSE,
+  rounding = 3L,
+  additional_parameters = list(method = "loocv", smudge = 1.4, c_star_min = 0.38,
+    c_star_max = 1.5, tol = 0.5, window = 10, iter = 1)
 )
 }
 \arguments{
@@ -29,12 +33,9 @@ object by \code{comparison}. Can include the ID column \code{SampleID}
 and the measurement column \code{MP_A}, but the measurement column \code{MP_B} is mandatory.
 External quality assessment (EQA) material measurements should be in here.}
 
-\item{weight_data}{A grouped \code{data.table}, \code{list} or \code{data.frame}
-object by \code{comparison}. Must include the ID column \code{SampleID}
-and the weight columns \code{MP_A} and \code{MP_B}.
-The computational weights are given by 1 / (\code{MP_A} + \code{MP_B}).
-If set to \code{NULL}, no weights are used. See documentation of
-\code{predict_smoothing_spline} for more information.}
+\item{weighted}{A \code{logical} value. If \code{TRUE}, weights are
+iteratively estimated from data.
+If set to \code{NULL}, no weights are used. See details for more information.}
 
 \item{df}{A optional \code{numeric} vector of length equal to the number of
 unique IVD-MD comparisons in \code{data}. It can alternatively be
@@ -61,10 +62,16 @@ The default is set to \code{FALSE}.}
 \item{negative_ok}{A \code{logical} value. If set to \code{TRUE}, negative values are allowed.
 See details.}
 
+\item{attempt_fast}{A \code{logical} value. If \code{TRUE}, the predictions are attempted speeded up.}
+
+\item{include_prediction_variance}{A \code{logical} value. If \code{TRUE}, prediction variances are returned part of the output.}
+
 \item{rounding}{An \code{integer} specifying the desired decimal places for the
 predictions and prediction intervals. The default setting is \code{3L},
 offering sufficient precision. The maximum limit is twelve
 due to double precision.}
+
+\item{additional_parameters}{A \code{list} containing additional alternatives for the smoothing spline fit.}
 }
 \value{
 A \code{data.table} object comprising approximated prediction interval data based on user inputs.

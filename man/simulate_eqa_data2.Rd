@@ -6,31 +6,33 @@
 \arguments{
 \item{parameters}{A \code{list} of parametedrs used to simulate the EQA data. You must at least specify one parameter for this function to run. Except that one mandatory parameter, you may optionally choose the remaining of the parameters. These are the optimal parameters that you may include into the list:
 \itemize{
-  \item{\code{n: }}{  The number of clinical samples}
-  \item{\code{R: }}{The number of replicates on each sample}
-  \item{\code{cvx: }}{The analytical CV of x measurements}
-  \item{\code{cvy: }}{The analytical CV of y measurements}
-  \item{\code{cil: }}{The lower range of the concentration interval}
-  \item{\code{ciu: }}{The upper range of the concentration interval}
-  \item{\code{dist: }}{The distribution to simulate latent variables from. Possbile choices include 'unif' (uniform distribution, default), 'norm' (normal distribution) , 'lst' (location-scale t-distribution), 'lnorm' (log-normal distribution)}
-  \item{\code{df_tau: }}{The degrees of freedom for the 'lst' distribution if the distribution of latent variables are location-scale t-distributed ('lst'). Defaults to 5 if not otherwise is specified.}
-  \item{\code{eta: }}{The heteroscedasticity factor}
-  \item{\code{eta0: }}{The proportion of base MS standard deviations}
-  \item{\code{qpos: }}{Position of systematic differences in non-selectivity. 0 signify lower range and 1 signify upper range}
-  \item{\code{qran: }}{Interquantile range where systematic differences in non-selectivity should have its effect}
-  \item{\code{prop: }}{average proportion of clinical samples affected by random differences in non-selectivity}
-  \item{\code{mmax: }}{The maximum relocation magnitude in number of analytical SDs of y measurements. This assumes either prop or qpos and qran to be specified as well}
-  \item{\code{b0: }}{For systematic linear DINS between IVD-MDs. Intercept. Defaults to 0.}
-  \item{\code{b1: }}{For systematic linear DINS between IVD-MDs. Slope. Defaults to 1.}
-  \item{\code{c0: }}{For systematic linear non-selectivity in IVD-MD 1. Intercept. Defaults to 0.}
-  \item{\code{c1: }}{For systematic linear non-selectivity in IVD-MD 1. Slope. Defaults to 1.}
-  \item{\code{error_dist: }}{The distribution to simulate measurement error components from. Possible choices include 'norm' (normal distribution, default) and 'lt' (location t-distribution)}
-  \item{\code{dfx: }}{The degrees of freedom for the measurement error components in IVD-MD 1 if error_dist = 'lt'. Defaults to 5 if not otherwise is specified.}
-  \item{\code{dfy: }}{The degrees of freedom for the measurement error components in IVD-MD 2 if error_dist = 'lt'. Defaults to 5 if not otherwise is specified.}
-  \item{\code{md_method: }}{Method for simulation missing data. Possible choices include 'none' (no missing data is simulated, default), 'mar' (missing at random), 'mnar' (missing not at random) and 'marmnar' (missing both at random and not at random)}
-  \item{\code{mar_prob: }}{The probability (value between 0 and 1) of having a missing measurement. Only relevant if \code{md_method} is 'mar' or 'marmnar'. If not specified, but \code{md_method} = 'mar' or \code{md_method} = 'marmnar', it defaults to 0.05.}
-  \item{\code{mnar_threshold: }}{The lower bound threshold (a real value) for when a measurement should be missing. Only relevant if \code{md_method} is 'mnar' or 'marmnar'. If not specified, but \code{md_method} = 'mnar' or \code{md_method} = 'marmnar', it defaults to \code{cil}. Alternatively, if not specified, but \code{md_method} = 'mnar0' or \code{md_method} = 'marmnar0', it defaults to 0.}
-
+  \item \code{n:} The number of samples.
+  \item \code{R:} The number of replicates on each sample.
+  \item \code{cvx:} The repeatability coefficient of variation for IVD-MD \code{MP_B}.
+  \item \code{cvy:} The repeatability coefficient of variation for IVD-MD \code{MP_A}.
+  \item \code{cil:} The lower bound of the concentration interval
+  \item \code{ciu:} The upper bound of the concentration interval
+  \item \code{dist:} The distribution to simulate latent variables from.
+                     Possbile choices include \code{unif} (uniform distribution, default),
+                     \code{norm} (normal distribution), \code{lst} (location-scale t-distribution),
+                     \code{lnorm} (log-normal distribution)
+  \item \code{df_tau:} The degrees of freedom for the 'lst' distribution if the distribution of latent variables are location-scale t-distributed ('lst'). Defaults to 5 if not otherwise is specified.
+  \item \code{eta:} The heteroscedasticity factor.
+  \item \code{eta0:} The proportion of base MS standard deviations.
+  \item \code{qpos:} Position of systematic differences in non-selectivity. 0 signify lower range and 1 signify upper range
+  \item \code{qran:} Interquantile range where systematic differences in non-selectivity should have its effect
+  \item \code{prop:} average proportion of clinical samples affected by random differences in non-selectivity
+  \item \code{mmax:} The maximum relocation magnitude in number of analytical SDs of y measurements. This assumes either prop or qpos and qran to be specified as well
+  \item \code{b0:} For systematic linear DINS between IVD-MDs. Intercept. Defaults to 0.
+  \item \code{b1:} For systematic linear DINS between IVD-MDs. Slope. Defaults to 1.
+  \item \code{c0:} For systematic linear non-selectivity in IVD-MD 1. Intercept. Defaults to 0.
+  \item \code{c1:} For systematic linear non-selectivity in IVD-MD 1. Slope. Defaults to 1.
+  \item \code{error_dist:} The distribution to simulate measurement error components from. Possible choices include 'norm' (normal distribution, default) and 'lt' (location t-distribution)
+  \item \code{dfx:} The degrees of freedom for the measurement error components in IVD-MD 1 if error_dist = 'lt'. Defaults to 5 if not otherwise is specified.
+  \item \code{dfy:} The degrees of freedom for the measurement error components in IVD-MD 2 if error_dist = 'lt'. Defaults to 5 if not otherwise is specified.
+  \item \code{md_method:} Method for simulation missing data. Possible choices include 'none' (no missing data is simulated, default), 'mar' (missing at random), 'mnar' (missing not at random) and 'marmnar' (missing both at random and not at random)
+  \item \code{mar_prob:} The probability (value between 0 and 1) of having a missing measurement. Only relevant if \code{md_method} is 'mar' or 'marmnar'. If not specified, but \code{md_method} = 'mar' or \code{md_method} = 'marmnar', it defaults to 0.05.
+  \item \code{mnar_threshold:} The lower bound threshold (a real value) for when a measurement should be missing. Only relevant if \code{md_method} is 'mnar' or 'marmnar'. If not specified, but \code{md_method} = 'mnar' or \code{md_method} = 'marmnar', it defaults to \code{cil}. Alternatively, if not specified, but \code{md_method} = 'mnar0' or \code{md_method} = 'marmnar0', it defaults to 0.
 }}
 
 \item{type}{\code{integer}. Set to \code{0} for default simulation of data. Set to \code{1}, \code{2} or \code{3} to simulate from custom built in non-linear functions.}

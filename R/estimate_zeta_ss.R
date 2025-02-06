@@ -2,176 +2,342 @@
 #'
 #' This function is used internally validate entries in estimate_zeta_ss.
 #' @keywords internal
-valdiate_estimate_zeta_ss <- function(data, df, complex, advice, error = TRUE, funny = TRUE){
+valdiate_estimate_zeta_ss <- function(data, df, weighted, error = FALSE){
 
-  # Check for required columns
-  required_cols <- c("MP_A", "MP_B")
-  if(!all(required_cols %in% names(data))){
-    if(error){
-      if(funny){
-        stop("'data' must have variables named 'MP_B' and 'MP_A'.")
+  valid <- TRUE
+  required_columns_data <- c("SampleID", "ReplicateID", "MP_B", "MP_A")
+
+  # Check if class if class is correct
+  if(!is.data.table(data)){
+    if(!is.list(data) && !is.data.frame(data)){
+      if(error){
+        stop("The data argument is not a data.table, data.frame or list, but a: ",
+             class(data))
       }
-      else{
-        stop("'data' must have variables named 'MP_B' and 'MP_A'.")
-      }
-    }
-    else{
-      return(list(zeta = NA_real_))
+      valid <- FALSE
     }
   }
+  # Check if have the correct names
+  missing_columns_data <- required_columns_data[which(!(required_columns_data %in% names(data)))]
+  if(length(missing_columns_data) >= 1){
+    if(error){
+      stop("The data argument does not have the necessary columns. ",
+           paste(missing_columns_data, collapse = ", "),
+           " are missing.")
+    }
+    valid <- FALSE
+  }
 
-  # Validation for 'df'
+  # Check if df argument is valid
   if(!is.null(df) && (!is.numeric(df) || length(df) != 1)){
     if(error){
-      if(funny){
-        stop("Ah, the classic 'df' is at it again, trying to be something it's not! 'df' should be a non-missing numeric value or NULL, but it's off gallivanting as a ", class(df), ". It's like a wannabe actor auditioning for a role it was never meant to play!")
-      }
-      else{
-        stop("'df' is expected to be a non-missing numeric value or NULL, but is a ", class(df), ".")
-      }
+      stop("df is expected to be a non-missing numeric value or NULL, but is a ",
+           class(df),
+           ".")
     }
-    else{
-      return(list(zeta = NA_real_))
+    valid <- FALSE
+  }
+  if(!is.null(df) && is.numeric(df) && df >= length(data$SampleID)){
+    if(error){
+      stop("df cannot exceed the number of unique samples in data.")
     }
   }
+
+  # Check if weighted argument is valid
+  if(is.null(weighted)){
+    if(error){
+      stop("weighted is expected to be a non-missing logical value, ",
+           "but is NULL.")
+    }
+    valid <- FALSE
+  }
+  else if(!is.logical(weighted)){
+    if(error){
+      stop("weighted is expected to be a non-missing logical value, ",
+           "but is a ",
+           class(weighted))
+    }
+    valid <- FALSE
+  }
+  else if(length(weighted) != 1){
+    if(error){
+      stop("weighted is expected to be a non-missing logical value, ",
+           "but is a logical vector of length.",
+           length(weighted))
+    }
+    valid <- FALSE
+  }
+  else if(is.na(weighted)){
+    if(error){
+      stop("weighted is expected to be a non-missing logical value, ",
+           "but is a NA value.")
+    }
+    valid <- FALSE
+  }
+  return(valid)
 }
 
 
-#' Estimate \eqn{\zeta} using Smoothing Splines
+#' Estimate \eqn{\zeta} Using Smoothing Splines
 #'
-#' @param data A \code{list} or \code{data.table} object. Must contain variables/columns \code{SampleID}, \code{ReplicateID}, \code{MP_A} and \code{MP_B}
-#' @param df A \code{double} between \code{2} and \code{n}, where \code{n} is the number of unique elements of \code{SampleID}. If \code{df} is set to 2 or smaller, ordinary least squares regression is used to estimate \eqn{\zeta}, because this estimate is more reliable in these cases.
-#' @param use_weights A \code{logical} value. If \code{TRUE}, weights are used to calculate \eqn{\zeta}. Weights are automatically determined.
-#' @param simple_output A \code{logical} value. Set to \code{FALSE}, if all components of the zeta calculation is required.
-#' @param na_rm A \code{logical} value. Should NA values be removed before estimating zeta hat?
+#' @param data A \code{list} or \code{data.table} object. Must contain columns,
+#'             \code{SampleID}, \code{ReplicateID}, \code{MP_A} and \code{MP_B}.
+#' @param df A \code{double} between \code{2} and \code{n}, where \code{n} is the
+#'           number of unique elements of \code{SampleID}. See details.
+#' @param weighted A \code{logical} value. If \code{TRUE}, iteratively estimated
+#'                 weights are used to fit the smoothing spline.
+#' @param mor A \code{logical} value.
+#' @param na_rm A \code{logical} value. Should NA values be removed before
+#'              estimating \eqn{\zeta}?
 #'
-#' @return A \code{list} with one variable \code{zeta}, which is a double signifying the estimate of \eqn{\zeta}.
+#' @details
+#' Estimates \eqn{\zeta} using the plug-in estimator
+#'
+#' \eqn{\hat{\zeta} = \frac{\hat{\sigma}^2 \cdot \frac{n + \mathrm{df}(c)}{n}}{\hat{\sigma}_v^2 + \hat{\sigma}_h^2 \frac{1}{N} \sum_{i=1}^{n}\sum_{r=1}^{R_i}[\hat{f}(x_{ir})]^2}}
+#'
+#'
+#' @return
+#' A \code{list} with one variable named \code{zeta}. This value is a \code{double}
+#' that signifies the smoothing spline estimate of \eqn{\zeta} based on \code{df}.
 #' @export
 #'
 #' @examples print(1)
 
-estimate_zeta_ss <- function(data, df = NULL, use_weights = FALSE, simple_output = TRUE, na_rm = TRUE){
+estimate_zeta_ss <- function(data, df = NULL, weighted = FALSE, mor = FALSE, na_rm = TRUE){
 
-  # Validate 'data' input
-  if (!is.data.table(data)) {
-    if (!is.list(data) && !is.data.frame(data)) {
-      stop("Oops, it seems like 'data' is having an identity crisis. It dreams of being a data.table, list, or data.frame, but alas, it is currently trapped in the body of a sad and confused ", class(data), ". Poor data, always searching for its true purpose, like a GPS with no sense of direction!")
-    }
-    data <- as.data.table(data)
-  }
+  # Initialization
+  R <- 1
 
   # Validate entries
-  valdiate_estimate_zeta_ss(data = data, df = df, error = TRUE, funny = TRUE)
+  valid_entries <- valdiate_estimate_zeta_ss(data = data,
+                                             df = df,
+                                             weighted = weighted,
+                                             error = TRUE)
+
+  # If not valid entries => return NA
+  if(!valid_entries){
+    return(list(zeta = NA_real_))
+  }
+
+  # Given that valid_entries must be TRUE here, we can convert data to data.table
+  data <- as.data.table(data)
 
   # If df is 2, we use estimate_zeta() method
   if(!is.null(df) && df <= 2){
-    return(estimate_zeta(data = data))
+    if(!mor){
+      return(estimate_zeta(data = data))
+    }
   }
 
   # Glocal precision estimates
-  impr <- global_precision_estimates(data = data, silence = 1L)
+  impr <- global_precision_estimates2(data = data)
 
-  # Remove NA-values if one wishes to do so.
+  # Check global precision estimates
+  # global_precision_estimates2 may result in unreliable estimates
+  # if CV_A -> 0 or CV_B -> 0. These next lines of code are supposed to
+  # guard against these cases.
+  if(impr$Var_B <= 0 + .Machine$double.eps){
+    impr$Var_B <- 0
+    impr$CV_B <- 0
+    impr$lambda <- .Machine$double.xmax
+  }
+  else if(impr$lambda <= 0 + .Machine$double.eps){
+    impr$Var_B <- 0
+    impr$CV_B <- 0
+    impr$lambda <- .Machine$double.eps
+  }
+
+  # If na_rm = TRUE, remove present NA values
   if(na_rm){
-    valid_ids <- (!is.na(data$MP_B)) & (!is.na(data$MP_A))
-    data <- data[valid_ids, ]
+    not_na_ids <- (!is.na(data$MP_B)) & (!is.na(data$MP_A))
+    data <- data[not_na_ids, ]
   }
 
-  # Calculate weight data
-  weight_data <- NULL
-  if(use_weights){
-    R_i <- count_samplewise_replicates(data, summary = "none")$R_i
-    vor_data <- fun_of_replicates2(data, "var") |> setDT()
-    mor_data <- fun_of_replicates2(data, "mean") |> setDT()
-    weight_data_mor <- weight_function(mor_data, vor_data, impr, output_type = "vector")
-    weight_data <- sapply(1:length(mor_data$SampleID), function(x) rep(weight_data_mor[x], R_i[x]), simplify = FALSE) |> unlist()
-  }
-  else{
-    weight_data <- rep(1, length(data$MP_A))
+  # Shift roles of predictor and response if lambda < 0.5
+  axis_variables <- c("MP_B", "MP_A", "Var_B", "Var_A")
+  if(impr$lambda < 0.5){
+    axis_variables <- c("MP_A", "MP_B", "Var_A", "Var_B")
   }
 
-  # Set order and assign variables based on lambda value
-  axis_var <- if (impr$lambda < 0.5) {
-    c("MP_A", "MP_B", "Var_A", "Var_B")
-  } else {
-    c("MP_B", "MP_A", "Var_B", "Var_A")
+  if(mor){
+    R <- count_samplewise_replicates(data = data,
+                                     summary = "mean",
+                                     invalid_NA = TRUE,
+                                     silence = 1)$R_i
+    if(is.null(R)){
+      stop("R was not correctly calculated. Check count_samplewise_replicates().")
+    }
+    data <- fun_of_replicates2(data)
+    setDT(data)
   }
 
-  setorderv(data, axis_var[1], order = 1)
-  x <- data[[axis_var[1]]]
-  y <- data[[axis_var[2]]]
-  var_h <- impr[[axis_var[3]]]
-  var_v <- impr[[axis_var[4]]]
-  x_unit <- x[order(x)]
-  x_unit <- (x_unit - x_unit[1]) / diff(range(x_unit))
-  all_knots <- c(0, calculate_interior_knots(x_unit), 1)
+  # Order according to predictor values
+  setorderv(data, axis_variables[1], order = 1)
 
-  # Smoothing spline fitting
-  if(is.null(df)){
-    ss_fit <- smooth.spline(x = x, y = y, w = weight_data, all.knots = all_knots, cv = TRUE, control.spar = list(low = 0.38, high = 1.5)) |> suppressWarnings()
-  }
-  else{
-    ss_fit <- smooth.spline(x = x, y = y, w = weight_data, df = df, all.knots = all_knots, cv = FALSE)
+  # Ordered (x_i, y_i, w_i)
+  x <- data[[axis_variables[1]]]
+  y <- data[[axis_variables[2]]]
+  w <- 1
+
+  # Extract repeatability variances
+  var_h <- impr[[axis_variables[3]]] / R
+  var_v <- impr[[axis_variables[4]]] / R
+
+  # Get weights
+  if(weighted){
+    w <- "estimate"
   }
 
-  var_eps <- ss_fit$pen.crit / (ss_fit$n - ss_fit$df)
-  slopes <- predict(ss_fit, deriv = 1)$y
-  var_h_trans <- mean(slopes^2, na.rm = TRUE) * var_h
+  # Fit the smoothing spline
+  ss_fit <- smoothing_spline(data = data,
+                             weights = w,
+                             df = df,
+                             df_max = NULL,
+                             attempt_fast = FALSE,
+                             na_rm = FALSE)#,
+                             #additional_parameters = ...)
 
-  # Estimate zeta
-  var_factor <- var_v + var_h_trans
-  zeta_value <- var_eps * (ss_fit$n + ss_fit$df) / ss_fit$n / var_factor
-
-  if(simple_output){
-    return(list(zeta = zeta_value))
-  }
-  else{
-    return(list(zeta = zeta_value, irr_var = var_factor, tot_var = var_eps, var_h = var_h, var_v = var_v, slopes = mean(slopes), sq_slopes = mean(slopes^2), shift = impr$lambda < 0.5))
-  }
+  numerator <- sum(ss_fit$var_eps / ss_fit$weights / ss_fit$n)  * (ss_fit$n + ss_fit$df) / ss_fit$n
+  denominator <- var_v + var_h * sum(ss_fit$derivatives^2 * ss_fit$weights / sum(ss_fit$weights))
+  zeta <- numerator / denominator
+  return(list("zeta" = zeta))
 }
 
 #' Estimate Comparison-wise \eqn{\zeta} using Smoothing Splines
 #'
-#' @param data A \code{data.table} object. Must contain variables/columns \code{comparison}, \code{SampleID}, \code{ReplicateID}, \code{MP_A} and \code{MP_B}
-#' @param df A \code{double} between \code{2} and \code{n}, where \code{n} is the number of unique elements of \code{SampleID}.
-#'           Otherwise, it must be a \code{numeric} vector of length equal to the number of unique elements in \code{comparison}.
-#'           If \code{df} is set to 2 or smaller, ordinary least squares regression is used to estimate \eqn{\zeta}, because this estimate is more reliable in these cases.
-#' @param use_weights A \code{logical} value. If \code{TRUE}, weights are used to calculate \eqn{\zeta}. Weights are automatically determined.
-#' @param na_rm A \code{logical} value. Should NA values be removed before estimating zeta hat?
+#' @param data A \code{data.table} object. Must contain columns \code{comparison},
+#'             \code{SampleID}, \code{ReplicateID}, \code{MP_A} and \code{MP_B}
+#' @param df A \code{double} between \code{2} and \code{n}, where \code{n} is the
+#'           number of unique elements of \code{SampleID}. Otherwise, it must be a
+#'           \code{numeric} vector of length equal to the number of unique elements
+#'           in \code{comparison}.
+#' @param weighted A \code{logical} value. If \code{TRUE}, iteratively estimated
+#'                 weights are used to fit the smoothing spline.
+#' @param na_rm A \code{logical} value. Should NA values be removed before
+#'              estimating \eqn{\zeta}?
 #'
-#' @return A \code{list} with one variable \code{zeta}, which is a double signifying the estimate of \eqn{\zeta}.
+#' @return
+#' A \code{data.table} with two variables. The first variable is the \code{comparison}
+#' variable. The second variable is the corresponding estimate of \eqn{\zeta},
+#' based on \code{df} and \code{weighted}.
 #' @export
 #'
 #' @examples print(1)
 
-estimate_zetas_ss <- function(data, df = NULL, use_weights = TRUE, na_rm = TRUE){
+estimate_zetas_ss <- function(data, df = NULL, weighted = FALSE, na_rm = TRUE){
 
-  data_grouped_by_comparison <- split(data, by = "comparison", keep.by = TRUE)
+  # Initialization
+  required_columns_data <- c("comparison",
+                             "SampleID",
+                             "ReplicateID",
+                             "MP_B",
+                             "MP_A")
+  valid_df <- TRUE
+  valid_weighted <- TRUE
+  must_split <- TRUE
 
-  output_comparison_names <- names(data_grouped_by_comparison)
-  output_comparison_ints <- 1L:length(data_grouped_by_comparison)
-
-
-  if(!is.null(df)){
-    if(length(unique(df)) == 1){
-      df <- rep(df[1], length(data_grouped_by_comparison))
+  # Checking validity of data
+  if(!is.data.table(data) & !is.data.frame(data) & !is.list(data)){
+    stop("data is not a data.table, data.frame or list, but a: ",
+         class(data)[1])
+  }
+  else if(!is.data.table(data)){
+    if(is.data.frame(data)){
+      data <- as.data.table(data)
     }
-    else if(!(length(df) == length(data_grouped_by_comparison))){
-      stop("df must be of same length as the number of comparisons in data")
+    else if(is.list(data)){
+      if(length(required_columns_data[which(!(required_columns_data %in% names(data)))]) == 0){
+        data <- as.data.table(data)
+      }
+      else if(length(required_columns_data[which(!(required_columns_data %in% names(data)))]) == 5){
+        if(is.data.table(data[[1]])){
+          if(length(required_columns_data[which(!(required_columns_data %in% names(data[[1]])))]) == 4){
+            must_split <- FALSE
+          }
+          else{
+            stop("data seems to be already a list grouped by comparison, but ",
+                 "the first element does not have the correct column names.")
+          }
+        }
+        else{
+          stop("data seems to be already a list grouped by comparison, but ",
+               "the first element is not a data.table.")
+        }
+      }
+    }
+  }
+  if(!is.data.table(data)){
+    stop("data is attempted to be converted to data.table, but is still",
+         " not a data.table, but a ",
+         class(data)[1])
+  }
+  missing_columns_data <- required_columns_data[which(!(required_columns_data %in% names(data)))]
+  if(length(missing_columns_data) >= 1){
+    stop("The data argument does not have the necessary columns. ",
+         paste(missing_columns_data, collapse = ", "),
+         " are missing.")
+  }
+
+  # Split data by comparison column
+  if(must_split){
+    data_grouped_by_comparison <- split(copy(data),
+                                        by = "comparison",
+                                        keep.by = TRUE)
+  }
+  else{
+    data_grouped_by_comparison <- copy(data)
+  }
+
+  # Get unique comparison names
+  output_comparison_names <- names(data_grouped_by_comparison)
+
+  # Checks if some of the names are invalid
+  if(any(required_columns_data %in% output_comparison_names)){
+    stop("The splitted data contain some invalid names: ",
+         paste(required_columns_data[required_columns_data %in% output_comparison_names],
+               collapse = ", "),
+         ".")
+  }
+
+  # Get number of unique comparisons in data
+  nc <- length(output_comparison_names)
+  # Get integer represetnation of each unique comparison
+  output_comparison_ints <- 1L:nc
+
+  # Check validity of df
+  if(!is.null(df)){
+    if(!is.numeric(df)){
+      stop("df must be NULL, a single double value or a numeric vector ",
+           "of same length as the number of unique comparisons in data.")
+    }
+    else if(length(df) == 0){
+      stop("df must be NULL, a single double value or a numeric vector ",
+           "of same length as the number of unique comparisons in data.")
+    }
+    else if(length(df) >= 2 & length(df) < nc){
+      stop("length of df is larger than 1, but not equal to the number ",
+           "of unique comparisons in data.")
+    }
+    else if(length(df) == 1){
+      df <- rep(df, nc)
     }
   }
 
-  output <- sapply(X = 1:length(data_grouped_by_comparison), FUN = function(x){
-    estimate_zeta_ss(data = data_grouped_by_comparison[[x]],
-                     df = df[x],
-                     simple_output = TRUE,
-                     na_rm = na_rm)
-  }, simplify = FALSE)
+  # Estimate zeta values for each unique comparison
+  zeta_grouped_by_comparison <- sapply(X = 1:nc,
+                                       FUN = function(x){
+                                         estimate_zeta_ss(data = data_grouped_by_comparison[[x]],
+                                                          df = df[x],
+                                                          weighted = weighted,
+                                                          na_rm = na_rm)
+                                       }, simplify = FALSE)
 
-  output <- rbindlist(output, idcol = "comparison")
-  output$comparison <- output_comparison_names[match(output$comparison, output_comparison_ints)]
+  zeta_grouped_by_comparison <- rbindlist(zeta_grouped_by_comparison,
+                                          idcol = "comparison")
+  zeta_grouped_by_comparison$comparison <- output_comparison_names[match(zeta_grouped_by_comparison$comparison,
+                                                                         output_comparison_ints)]
 
-  return(output)
+  return(zeta_grouped_by_comparison)
 
 }
 
