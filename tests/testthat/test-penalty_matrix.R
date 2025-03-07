@@ -1,5 +1,5 @@
 library(fasteqa)
-suppressWarnings(library(data.table))
+library(data.table)
 library(testthat)
 
 is_lower_4_banded <- function(matrix) {
@@ -14,7 +14,8 @@ is_lower_4_banded <- function(matrix) {
   return(TRUE)
 }
 
-test_data <- simulate_eqa_data2(parameters = list(n = 25, R = 3, cil = 2, ciu = 10, cvx = 0.01, cvy = 0.01, cve = 0), type = 2)
+cs_parameters <- list(n = 25, R = 3, cvx = 0.01, cvy = 0.01, cil = 2, ciu = 10)
+test_data <- sim_eqa_data(parameters = cs_parameters, type = 2)
 
 x_orig <- test_data$MP_B[order(test_data$MP_B)]
 x_unit <- (x_orig - min(x_orig)) / diff(range(x_orig))

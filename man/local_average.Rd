@@ -7,34 +7,41 @@
 local_average(x, weights, window)
 }
 \arguments{
-\item{x}{A \code{numeric} vector. Must contain the stochastic process values
-that are used in estimating the weighted local average curve.}
+\item{x}{A \code{numeric} vector. Must contain the stochastic process
+values that are used in estimating the weighted local average
+curve.}
 
-\item{weights}{A \code{numeric} vector. Must contain weights for each of the stochastic
-process values. Set all weights to \code{1} to bypass weighting.}
+\item{weights}{A \code{numeric} vector. Must contain weights for each of
+the stochastic process values. If all equal to \code{1},
+weighting is bypassed.}
 
-\item{window}{A \code{integer} value. The window-width for estimating averages
-at each point. See details.}
+\item{window}{An \code{integer}. The width of the moving window.
+See details.}
 }
 \value{
-A \code{numeric} vector of local-average estimates.
+A \code{numeric} vector. The weighted local-average estimates of \code{x}.
 }
 \description{
-Estimate weighted local average curve.
+Estimates the weighted local-average for a stochastic process \code{x}.
 }
 \details{
-Calculates the estimated weighted local-averages for the sample \eqn{\lbrace x_i \rbrace_{i=1}^{N}}
-and weights \eqn{\lbrace w_i \rbrace_{i=1}^{N}}.
-We assume the following model:
+Calculates the estimated weighted local-averages for the stochastic
+process values \eqn{\lbrace x_i \rbrace_{i=1}^{N}}. The estimation
+utilizes weights \eqn{\lbrace w_i \rbrace_{i=1}^{N}}. We assume the
+following model:
 
 \eqn{x_i = f(x_i) + \epsilon_i}.
 
-We attempt to estimate the signal \eqn{f(x_i)}, using a weighted local-average model:
+The goal is to extract the signal \eqn{f(x_i)}, using a weighted
+local-average model:
 
-\eqn{\hat{f}(x_i) = \frac{1}{w_i \cdot (\min\lbrace N, i + \Delta \rbrace - \max\lbrace 1, i - \Delta \rbrace)} \cdot \sum_{j = \max\lbrace 1, i - \Delta \rbrace}^{\min\lbrace N, i + \Delta \rbrace} x_j}
+\eqn{\hat{f}(x_i) = \frac{1}
+{w_i \cdot (\min\lbrace N, i + \Delta \rbrace - \max\lbrace 1, i - \Delta
+\rbrace)} \cdot \sum_{j = \max\lbrace 1, i - \Delta \rbrace}^{\min\lbrace
+N, i + \Delta \rbrace} x_j}
 
-Here, \eqn{\Delta} is half of the value given in \code{window}. \code{NA} values are allowed,
-and will be silently removed if present.
+Here, \eqn{\Delta} is \eqn{0.5 \times} \code{window}. Note: \code{NA}
+values are allowed in \code{x}, and will be silently removed if present.
 }
 \examples{
 \dontrun{

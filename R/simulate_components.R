@@ -50,7 +50,17 @@ simulate_components <- function(parameters,
     additional_parameters$smudge <- parameters$smudge
   }
 
-  simulated_cs_data <- simulate_eqa_data2(parameters = parameters, type = type, AR = FALSE, include_parameters = TRUE, shift = shift_roles)
+  simulated_cs_data <- sim_eqa_data(parameters = parameters,
+                                    type = type,
+                                    AR = FALSE,
+                                    include_parameters = TRUE)
+  if(shift_roles){
+    temp_MP_A <- simulated_cs_data$simulated_data$MP_A
+    simulated_cs_data$simulated_data$MP_A <- simulated_cs_data$simulated_data$MP_B
+    simulated_cs_data$simulated_data$MP_B <- temp_MP_A
+  }
+
+
   output_ss <- tryCatch(expr = smoothing_spline(data = simulated_cs_data$simulated_data,
                                                 weights = 1,
                                                 df = if(any("df" == names(parameters))){parameters$df}else{NULL},
@@ -82,7 +92,12 @@ simulate_components <- function(parameters,
     eq_parameters$obs_tau <- obs_tau
     simulated_cs_data <- simulated_cs_data$simulated_data
 
-    simulated_eq_data <- simulate_eqa_data2(parameters = eq_parameters, type = type, AR = FALSE, include_parameters = FALSE, shift = shift_roles)
+    simulated_eq_data <- sim_eqa_data(parameters = eq_parameters, type = type, AR = FALSE, include_parameters = FALSE)
+    if(shift_roles){
+      temp_MP_A <- simulated_eq_data$MP_A
+      simulated_eq_data$MP_A <- simulated_eq_data$MP_B
+      simulated_eq_data$MP_B <- temp_MP_A
+    }
     output_pr <- tryCatch(expr = predict_smoothing_spline(data = simulated_cs_data,
                                                           new_data = simulated_eq_data,
                                                           weighted = FALSE,
@@ -231,7 +246,7 @@ replicate_simulate_components <- function(parameters,
       new_enviroment$include_pe <- include_pe
       new_enviroment$replicate_simulate_components_internal <- replicate_simulate_components_internal
       new_enviroment$simulate_components <- simulate_components
-      new_enviroment$simulate_eqa_data2 <- simulate_eqa_data2
+      new_enviroment$sim_eqa_data <- sim_eqa_data
 
       cl <- makeCluster(min(detectCores() - 1, max_cores))
       on.exit(stopCluster(cl))
@@ -241,7 +256,7 @@ replicate_simulate_components <- function(parameters,
                                          "seed",
                                          "attempt_fast",
                                          "include_pe",
-                                         "simulate_eqa_data2",
+                                         "sim_eqa_data",
                                          "simulate_components",
                                          "replicate_simulate_components_internal"), envir = new_enviroment)
       if(is.null(seed)){
@@ -276,7 +291,7 @@ replicate_simulate_components <- function(parameters,
       new_enviroment$attempt_fast <- attempt_fast
       new_enviroment$include_pe <- include_pe
       new_enviroment$simulate_components <- simulate_components
-      new_enviroment$simulate_eqa_data2 <- simulate_eqa_data2
+      new_enviroment$sim_eqa_data <- sim_eqa_data
 
       cl <- makeCluster(min(detectCores() - 1, max_cores))
       on.exit(stopCluster(cl))
@@ -286,7 +301,7 @@ replicate_simulate_components <- function(parameters,
                                          "seed",
                                          "attempt_fast",
                                          "include_pe",
-                                         "simulate_eqa_data2",
+                                         "sim_eqa_data",
                                          "simulate_components"), envir = new_enviroment)
       if(is.null(seed)){
         clusterEvalQ(cl = cl, expr = {library(data.table)})

@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulate_mspe.R
 \name{simulate_mspe}
 \alias{simulate_mspe}
-\title{Simulate Mean Squared Prediction Error for Smoothing Spline}
+\title{Simulate Smoothing Spline Mean Squared Prediction Errors}
 \usage{
 simulate_mspe(
   parameters,
@@ -11,7 +11,7 @@ simulate_mspe(
   extrapolate_ok = FALSE,
   shift = FALSE,
   attempt_fast = FALSE,
-  parallel = TRUE,
+  parallel = FALSE,
   max_cores = 4,
   seed = 99,
   percent = TRUE,
@@ -21,56 +21,113 @@ simulate_mspe(
 )
 }
 \arguments{
-\item{parameters}{A \code{list}, \code{data.table} or \code{data.frame} with column names representing the parameters to be included in the simulations.
-Must in general include \code{n}, \code{R}, \code{cvx}, \code{cvy}, and \code{df} or \code{df_max}. If \code{type} is included, data will
-be simulated from custom non-linear functions. Note that \code{cil} and \code{ciu} also must be included if \code{type} is included.}
+\item{parameters}{A \code{list}, \code{data.table} or \code{data.frame}.
+The parameters and corresponding values to be used in
+the simulation. Either \code{df} or \code{df_max}, must
+be included. See \code{sim_eqa_data()} for other
+parameters.}
 
-\item{N}{An \code{integer} that represents the number of replicated MSPE calculations
-based on each parameter combination.}
+\item{N}{An \code{integer}. The desired number of replicated prediction error
+calculations for each parameter combination in \code{parameters}.}
 
-\item{m}{An \code{integer} larger than or equal to \code{1L}.
-How many external quality assessment materials should be simulated?}
+\item{m}{An \code{integer}. Must be larger than or equal to \code{1L}.
+The desired number of evaluated materials to simulate. Defaults to
+\code{1L}.}
 
-\item{extrapolate_ok}{A \code{logical} value. If \code{TRUE}, test data can be
-simulated beyond the empirical range of the clinical sample data.}
+\item{extrapolate_ok}{A non-missing \code{logical} value. If \code{TRUE},
+simulated evaluated material data are allowed to
+produce measurements beyond the support of the
+clinical samples IVD-MD measurements. Defaults to
+\code{FALSE}.}
 
-\item{shift}{A \code{logical} value. If \code{TRUE}, the roles of \code{MP_A}
-and \code{MP_B} shift if \code{lambda < 0.5}.}
+\item{shift}{A non-missing \code{logical} value. If \code{TRUE}, the roles
+of \code{MP_A} and \code{MP_B} are allowed to shift. Can only
+happen if \code{lambda < 0.5}. Defaults to \code{FALSE}.}
 
-\item{attempt_fast}{A \code{logical} value. If \code{TRUE}, the predictions are attempted speeded up.}
+\item{attempt_fast}{A non-missing \code{logical} value. If \code{TRUE}, the
+\code{smooth.spline()} is used to make predictions.
+Defaults to \code{FALSE}.}
 
-\item{parallel}{A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}).
-If set to \code{TRUE}, simulations are done on multiple cores on
-your local machine for the duration of the function call.}
+\item{parallel}{A non-missing \code{logical} value. If \code{TRUE},
+simulations are done in parallel. May reduce runtime.
+Defaults to \code{FALSE}.}
 
-\item{max_cores}{An \code{integer} value between \code{2} and the number of cores
-you have on your computer. If you wish to use fewer cores than
-is on your computer, you should specify this here.}
+\item{max_cores}{An \code{integer}. Must be between \code{2} and the number
+of cores you have on your computer. If fewer cores than
+the total number of cores on your computer is desired,
+specify this here. Defaults to \code{4L}.}
 
-\item{seed}{An \code{integer} value. If you wish to set a seed for reproducibility, set it here.
-If you do not want reproducibility, set this to \code{NULL}.}
+\item{seed}{An \code{integer}. Ensuring reproducibility even if
+\code{parallel = TRUE}. If reproducibility is unimportant, set
+this to \code{NULL}. Defaults to \code{99L}.}
 
-\item{percent}{A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}).
-If set to \code{TRUE}, all numbers that are possible to present
-as percentages are presented as percentages.}
+\item{percent}{A non-missing \code{logical} value. If \code{TRUE}, all
+results possible to present as percentages are presented as
+percentages. Defaults to \code{TRUE}.}
 
-\item{log_mspe}{A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}).
-If set to \code{TRUE}, simulated MSPE values are log-transformed.
-This may be useful for plotting.}
+\item{log_mspe}{A non-missing \code{logical} value. If \code{TRUE},
+simulated MSPE values are log-transformed. May be useful
+for plotting purposes if raw MSPE values near \code{0}.
+Defaults to \code{FALSE}.}
 
-\item{include_ici}{A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}).
-If set to \code{TRUE}, first and third quartiles of simulated
-MSPE values are returned part of the output object.}
+\item{include_ici}{A non-missing \code{logical} value. If \code{TRUE}, the
+first and third quartile of simulated MSPE values
+included in the output. Defaults to \code{FALSE}.}
 
-\item{trim}{A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}).
-If set to \code{TRUE}, trimmed mean with fraction \eqn{0.5\%} is used.}
+\item{trim}{A non-missing \code{logical}. If \code{TRUE}, MSPE values are
+calculated after trimming extreme and potentially errenous
+prediction errors. Defaults to \code{FALSE}.}
 }
 \value{
-A \code{data.table}.
+A \code{data.table}. The resulting simulated MSPE values for every unique
+parameter combination in \code{parameters}. If \code{include_ici = TRUE},
+quartiles of the simulated squared prediction errors are included in the
+output and named \code{lwr} and \code{upr}, respectively.
 }
 \description{
-Simulate Mean Squared Prediction Error for Smoothing Spline
+Simulates MSPE values for each parameter combination in \code{parameters}.
+}
+\details{
+Replicates \code{simulate_pe()} \code{N} times for each parameter
+combination in \code{parameters}. For each combination, the arithmetic mean
+is applied to the squared simulated prediction errors, and the end result is
+the simulated MSPE values.
+
+General note: Any function named \code{simulate_***}, is generally not
+intended to be used by end-users. They are used in research and validity
+testing.
 }
 \examples{
-print(1)
+# Required packages
+library(fasteqa)
+library(data.table)
+
+# Simulation parameters
+n <- c(25, 40)
+R <- c(3, 4)
+cvx <- 0.01
+cvy <- 0.01
+type <- c(1, 2, 3)
+df_max <- 7.5
+tau_obs <- c(3, 6, 9)
+parameters <- CJ(n, R, cvx, cvy, df_max, type, tau_obs)
+
+# Number of unique parameter combinations
+print(nrow(parameters))
+
+# Approximate smoothing spline MSPE values (using trimming)
+# Takes approximately 1.5 minutes to run
+output <- simulate_mspe(parameters = parameters,
+                        N = 1e3,
+                        m = 1,
+                        parallel = FALSE,
+                        percent = TRUE,
+                        trim = TRUE)
+
+# Rounding results for cleaner output
+output$mspe <- round(output$mspe, 4L)
+
+# The output
+print(output)
+
 }

@@ -14,6 +14,7 @@ simulate_pes_internal(
 )
 }
 \description{
-This function replicates prediction error calculation \code{N} times for \code{parameters}
+This function replicates prediction error calculation \code{N} times for
+\code{parameters}
 }
 \keyword{internal}

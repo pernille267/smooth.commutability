@@ -7,7 +7,7 @@ valdiate_estimate_zeta_ss <- function(data, df, weighted, error = FALSE){
   valid <- TRUE
   required_columns_data <- c("SampleID", "ReplicateID", "MP_B", "MP_A")
 
-  # Check if class if class is correct
+  # Check if class is correct
   if(!is.data.table(data)){
     if(!is.list(data) && !is.data.frame(data)){
       if(error){
@@ -125,15 +125,15 @@ estimate_zeta_ss <- function(data, df = NULL, weighted = FALSE, mor = FALSE, na_
   # If df is 2, we use estimate_zeta() method
   if(!is.null(df) && df <= 2){
     if(!mor){
-      return(estimate_zeta(data = data))
+      return(estimate_zeta_ols(data = data))
     }
   }
 
   # Glocal precision estimates
-  impr <- global_precision_estimates2(data = data)
+  impr <- global_precision_estimates(data = data)
 
   # Check global precision estimates
-  # global_precision_estimates2 may result in unreliable estimates
+  # global_precision_estimates may result in unreliable estimates
   # if CV_A -> 0 or CV_B -> 0. These next lines of code are supposed to
   # guard against these cases.
   if(impr$Var_B <= 0 + .Machine$double.eps){
@@ -167,8 +167,7 @@ estimate_zeta_ss <- function(data, df = NULL, weighted = FALSE, mor = FALSE, na_
     if(is.null(R)){
       stop("R was not correctly calculated. Check count_samplewise_replicates().")
     }
-    data <- fun_of_replicates2(data)
-    setDT(data)
+    data <- data[, fun_of_replicates(.SD)]
   }
 
   # Order according to predictor values

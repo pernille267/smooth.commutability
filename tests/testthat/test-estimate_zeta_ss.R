@@ -1,6 +1,9 @@
 library(fasteqa)
-suppressWarnings(library(data.table))
+library(data.table)
 library(testthat)
+
+# Reprod.
+set.seed(99)
 
 # Initialize
 detailed_testing <- TRUE
@@ -16,9 +19,9 @@ parameters_3 <- list(n = 25, R = 3, cil = 2, ciu = 10, cvx = 1e-20, cvy = 0.01, 
 test_that("Check structure of output of estimate_zeta_ss()", code = {
 
   # Test data
-  test_data_1 <- simulate_eqa_data2(parameters = parameters_1,
-                                    type = 0,
-                                    AR = TRUE)
+  test_data_1 <- sim_eqa_data(parameters = parameters_1,
+                              type = 0,
+                              AR = TRUE)
 
   # Actual output
   actual_1 <- estimate_zeta_ss(data = test_data_1, df = 2)
@@ -51,21 +54,21 @@ test_that("Check structure of output of estimate_zeta_ss()", code = {
 test_that("Check value of estimate_zeta_ss()", code = {
 
   # Test data
-  test_data_1 <- simulate_eqa_data2(parameters = parameters_1,
-                                    type = 0,
-                                    AR = TRUE)
-  test_data_2 <- simulate_eqa_data2(parameters = parameters_2,
-                                    type = 1,
-                                    AR = TRUE)
-  test_data_3 <- simulate_eqa_data2(parameters = parameters_2,
-                                    type = 2,
-                                    AR = TRUE)
-  test_data_4 <- simulate_eqa_data2(parameters = parameters_2,
-                                    type = 3,
-                                    AR = TRUE)
-  test_data_5 <- simulate_eqa_data2(parameters = parameters_3,
-                                    type = 2,
-                                    AR = TRUE)
+  test_data_1 <- sim_eqa_data(parameters = parameters_1,
+                              type = 0,
+                              AR = TRUE)
+  test_data_2 <- sim_eqa_data(parameters = parameters_2,
+                              type = 1,
+                              AR = TRUE)
+  test_data_3 <- sim_eqa_data(parameters = parameters_2,
+                              type = 2,
+                              AR = TRUE)
+  test_data_4 <- sim_eqa_data(parameters = parameters_2,
+                              type = 3,
+                              AR = TRUE)
+  test_data_5 <- sim_eqa_data(parameters = parameters_3,
+                              type = 2,
+                              AR = TRUE)
 
   # Actual output (I)
   actual_1 <- estimate_zeta_ss(data = test_data_1)
@@ -121,47 +124,47 @@ test_that("Check value of estimate_zeta_ss()", code = {
 test_that("Check value of estimate_zeta_ss() when df <= 2", code = {
 
   # Test data
-  test_data_1 <- simulate_eqa_data2(parameters = parameters_1,
-                                    type = 0,
-                                    AR = TRUE)
-  test_data_2 <- simulate_eqa_data2(parameters = parameters_2,
-                                    type = 1,
-                                    AR = TRUE)
-  test_data_3 <- simulate_eqa_data2(parameters = parameters_2,
-                                    type = 2,
-                                    AR = TRUE)
-  test_data_4 <- simulate_eqa_data2(parameters = parameters_2,
-                                    type = 3,
-                                    AR = TRUE)
-  test_data_5 <- simulate_eqa_data2(parameters = parameters_3,
-                                    type = 2,
-                                    AR = TRUE)
+  test_data_1 <- sim_eqa_data(parameters = parameters_1,
+                              type = 0,
+                              AR = TRUE)
+  test_data_2 <- sim_eqa_data(parameters = parameters_2,
+                              type = 1,
+                              AR = TRUE)
+  test_data_3 <- sim_eqa_data(parameters = parameters_2,
+                              type = 2,
+                              AR = TRUE)
+  test_data_4 <- sim_eqa_data(parameters = parameters_2,
+                              type = 3,
+                              AR = TRUE)
+  test_data_5 <- sim_eqa_data(parameters = parameters_3,
+                              type = 2,
+                              AR = TRUE)
 
   # Actual output
   actual_1 <- estimate_zeta_ss(data = test_data_1, df = 2)
   actual_2 <- estimate_zeta_ss(data = test_data_2, df = 1)
   actual_3 <- estimate_zeta_ss(data = test_data_3, df = 0)
   actual_4 <- estimate_zeta_ss(data = test_data_4, df = 1)
-  actual_5 <- estimate_zeta_ss(data = test_data_5, df = 2)
+  actual_5 <- suppressWarnings(estimate_zeta_ss(data = test_data_5, df = 2))
 
   expect_equal(object = actual_1$zeta,
-               expected = estimate_zeta(test_data_1)$zeta,
+               expected = estimate_zeta_ols(test_data_1)$zeta,
                tolerance = 1e-4,
                label = "[TEST 3.1.1]")
   expect_equal(object = actual_2$zeta,
-               expected = estimate_zeta(test_data_2)$zeta,
+               expected = estimate_zeta_ols(test_data_2)$zeta,
                tolerance = 1e-4,
                label = "[TEST 3.1.2]")
   expect_equal(object = actual_3$zeta,
-               expected = estimate_zeta(test_data_3)$zeta,
+               expected = estimate_zeta_ols(test_data_3)$zeta,
                tolerance = 1e-4,
                label = "[TEST 3.1.3]")
   expect_equal(object = actual_4$zeta,
-               expected = estimate_zeta(test_data_4)$zeta,
+               expected = estimate_zeta_ols(test_data_4)$zeta,
                tolerance = 1e-4,
                label = "[TEST 3.1.4]")
   expect_equal(object = actual_5$zeta,
-               expected = estimate_zeta(test_data_5)$zeta,
+               expected = suppressWarnings(estimate_zeta_ols(test_data_5)$zeta),
                tolerance = 1e-4,
                label = "[TEST 3.1.5]")
 })
@@ -206,9 +209,9 @@ test_that(desc = "Check value of estimate_zeta_ss() (II)", code = {
               label = "[TEST 4.2.3]")
 
   # Check whether zeta values are plausible for df = 2
-  impr_1 <- global_precision_estimates2(real_data_1)
-  impr_2 <- global_precision_estimates2(real_data_2)
-  impr_3 <- global_precision_estimates2(real_data_3)
+  impr_1 <- global_precision_estimates(real_data_1)
+  impr_2 <- global_precision_estimates(real_data_2)
+  impr_3 <- global_precision_estimates(real_data_3)
   lambda_1 <- impr_1$lambda
   lambda_2 <- impr_2$lambda
   lambda_3 <- impr_3$lambda
@@ -378,9 +381,9 @@ if(detailed_testing){
   test_that(desc = "Testing relationship between MOR and AR", code = {
     mor_and_ar <- sapply(X = 1:1000,
                          FUN = function(x){
-                          test_data_2 <- simulate_eqa_data2(parameters = parameters_2,
-                                                            type = 2,
-                                                            AR = TRUE)
+                          test_data_2 <- sim_eqa_data(parameters = parameters_2,
+                                                      type = 2,
+                                                      AR = TRUE)
                           return(list("AR" = estimate_zeta_ss(data = test_data_2, mor = FALSE)$zeta,
                                       "MOR" = estimate_zeta_ss(data = test_data_2, mor = TRUE)$zeta))
                         }, simplify = FALSE)

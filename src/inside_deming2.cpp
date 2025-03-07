@@ -201,9 +201,9 @@ IntegerVector inside_deming2(const List& data, const List& new_data, const List&
       const double nx_latent = mu_hat * (1.0 - mu_ratio) + ny[j] * mu_ratio;
       const double dev = nx_latent - mu_hat;
 
-      var_pred_error[j] = var_b1 * dev * dev +
+      var_pred_error[j] = (1.0 + 1.0 / (n - 2.0)) * (var_b1 * dev * dev +
         var_b1 * sigma_h_squared * R_ratio +
-        (1.0 + 1.0/n) * (b1 * b1 * sigma_h_squared + sigma_v_squared) * R_ratio;
+        (1.0 + 1.0/n) * (b1 * b1 * sigma_h_squared + sigma_v_squared) * R_ratio);
 
       const double margin = t_quantile * std::sqrt(var_pred_error[j]);
       lwr[j] = ny[j] - margin;

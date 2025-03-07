@@ -1,7 +1,8 @@
 library(fasteqa)
-suppressWarnings(library(data.table))
+library(data.table)
 library(testthat)
 
+# Reproducibility
 set.seed(99)
 
 parameters_1 <- list(n = 25, R = 3, cil = 2, ciu = 10, cvx = 1e-20, cvy = 0.01, df_max = 5)

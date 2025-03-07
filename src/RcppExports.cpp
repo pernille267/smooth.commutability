@@ -165,18 +165,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// fun_of_replicates2
-List fun_of_replicates2(List data, std::string fun);
-RcppExport SEXP _smooth_commutability_fun_of_replicates2(SEXP dataSEXP, SEXP funSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
-    Rcpp::traits::input_parameter< std::string >::type fun(funSEXP);
-    rcpp_result_gen = Rcpp::wrap(fun_of_replicates2(data, fun));
-    return rcpp_result_gen;
-END_RCPP
-}
 // inside_deming2
 IntegerVector inside_deming2(const List& data, const List& new_data, const List& imprecision_estimates, const int R, const double R_ratio, const double level);
 RcppExport SEXP _smooth_commutability_inside_deming2(SEXP dataSEXP, SEXP new_dataSEXP, SEXP imprecision_estimatesSEXP, SEXP RSEXP, SEXP R_ratioSEXP, SEXP levelSEXP) {
@@ -290,100 +278,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// global_precision_estimates2
-List global_precision_estimates2(List data);
-RcppExport SEXP _smooth_commutability_global_precision_estimates2(SEXP dataSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
-    rcpp_result_gen = Rcpp::wrap(global_precision_estimates2(data));
-    return rcpp_result_gen;
-END_RCPP
-}
-// resample_samples2
-List resample_samples2(List data);
-RcppExport SEXP _smooth_commutability_resample_samples2(SEXP dataSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
-    rcpp_result_gen = Rcpp::wrap(resample_samples2(data));
-    return rcpp_result_gen;
-END_RCPP
-}
-// resample_fun_of_samples
-List resample_fun_of_samples(List data);
-RcppExport SEXP _smooth_commutability_resample_fun_of_samples(SEXP dataSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
-    rcpp_result_gen = Rcpp::wrap(resample_fun_of_samples(data));
-    return rcpp_result_gen;
-END_RCPP
-}
-// resample_fun_of_samples_all
-List resample_fun_of_samples_all(List data);
-RcppExport SEXP _smooth_commutability_resample_fun_of_samples_all(SEXP dataSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
-    rcpp_result_gen = Rcpp::wrap(resample_fun_of_samples_all(data));
-    return rcpp_result_gen;
-END_RCPP
-}
-// resample_imprecision
-List resample_imprecision(List data);
-RcppExport SEXP _smooth_commutability_resample_imprecision(SEXP dataSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type data(dataSEXP);
-    rcpp_result_gen = Rcpp::wrap(resample_imprecision(data));
-    return rcpp_result_gen;
-END_RCPP
-}
-// simulate_eqa_data2
-List simulate_eqa_data2(List parameters, int type, bool AR, bool include_parameters, bool shift);
-RcppExport SEXP _smooth_commutability_simulate_eqa_data2(SEXP parametersSEXP, SEXP typeSEXP, SEXP ARSEXP, SEXP include_parametersSEXP, SEXP shiftSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type parameters(parametersSEXP);
-    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
-    Rcpp::traits::input_parameter< bool >::type AR(ARSEXP);
-    Rcpp::traits::input_parameter< bool >::type include_parameters(include_parametersSEXP);
-    Rcpp::traits::input_parameter< bool >::type shift(shiftSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_eqa_data2(parameters, type, AR, include_parameters, shift));
-    return rcpp_result_gen;
-END_RCPP
-}
-// skewness
-double skewness(NumericVector x, bool na_rm);
-RcppExport SEXP _smooth_commutability_skewness(SEXP xSEXP, SEXP na_rmSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< bool >::type na_rm(na_rmSEXP);
-    rcpp_result_gen = Rcpp::wrap(skewness(x, na_rm));
-    return rcpp_result_gen;
-END_RCPP
-}
-// kurtosis
-double kurtosis(NumericVector x, bool na_rm);
-RcppExport SEXP _smooth_commutability_kurtosis(SEXP xSEXP, SEXP na_rmSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< bool >::type na_rm(na_rmSEXP);
-    rcpp_result_gen = Rcpp::wrap(kurtosis(x, na_rm));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_smooth_commutability_calculate_r", (DL_FUNC) &_smooth_commutability_calculate_r, 2},
@@ -397,7 +291,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_smooth_commutability_brent_min", (DL_FUNC) &_smooth_commutability_brent_min, 5},
     {"_smooth_commutability_first_min", (DL_FUNC) &_smooth_commutability_first_min, 6},
     {"_smooth_commutability_error_df2", (DL_FUNC) &_smooth_commutability_error_df2, 7},
-    {"_smooth_commutability_fun_of_replicates2", (DL_FUNC) &_smooth_commutability_fun_of_replicates2, 2},
     {"_smooth_commutability_inside_deming2", (DL_FUNC) &_smooth_commutability_inside_deming2, 6},
     {"_smooth_commutability_sigma_h_squared_deming2", (DL_FUNC) &_smooth_commutability_sigma_h_squared_deming2, 2},
     {"_smooth_commutability_local_average", (DL_FUNC) &_smooth_commutability_local_average, 3},
@@ -406,14 +299,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_smooth_commutability_obtain_df_max", (DL_FUNC) &_smooth_commutability_obtain_df_max, 3},
     {"_smooth_commutability_reconstruct_4_band_matrix", (DL_FUNC) &_smooth_commutability_reconstruct_4_band_matrix, 1},
     {"_smooth_commutability_get_matrices", (DL_FUNC) &_smooth_commutability_get_matrices, 1},
-    {"_smooth_commutability_global_precision_estimates2", (DL_FUNC) &_smooth_commutability_global_precision_estimates2, 1},
-    {"_smooth_commutability_resample_samples2", (DL_FUNC) &_smooth_commutability_resample_samples2, 1},
-    {"_smooth_commutability_resample_fun_of_samples", (DL_FUNC) &_smooth_commutability_resample_fun_of_samples, 1},
-    {"_smooth_commutability_resample_fun_of_samples_all", (DL_FUNC) &_smooth_commutability_resample_fun_of_samples_all, 1},
-    {"_smooth_commutability_resample_imprecision", (DL_FUNC) &_smooth_commutability_resample_imprecision, 1},
-    {"_smooth_commutability_simulate_eqa_data2", (DL_FUNC) &_smooth_commutability_simulate_eqa_data2, 5},
-    {"_smooth_commutability_skewness", (DL_FUNC) &_smooth_commutability_skewness, 2},
-    {"_smooth_commutability_kurtosis", (DL_FUNC) &_smooth_commutability_kurtosis, 2},
     {NULL, NULL, 0}
 };
 

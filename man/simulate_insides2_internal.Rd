@@ -16,6 +16,7 @@ simulate_insides2_internal(
 )
 }
 \description{
-This function checks if external quality assessment materials are inside estimated prediction intervals
+This function checks if evaluated materials are inside the estimated
+prediction intervals
 }
 \keyword{internal}

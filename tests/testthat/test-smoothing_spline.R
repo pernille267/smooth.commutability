@@ -1,24 +1,37 @@
 library(fasteqa)
-suppressWarnings(library(data.table))
+library(data.table)
 library(testthat)
 
+# Reproducibility
 set.seed(99)
 
-test_data_1 <- simulate_eqa_data2(parameters = list(n = 25, R = 3, cvx = 0.01, cvy = 0.01, cil = 2, ciu = 10), type = 2, AR = FALSE) |> setDT()
-test_data_2_ar <- fix_predictor_and_response(fread(file = "~/Packages/test data smooth.commutability/fictive_crp_cs_data.csv"))
+# Test data
+test_data_1 <- sim_eqa_data(parameters = list(n = 25,
+                                              R = 3,
+                                              cvx = 0.01,
+                                              cvy = 0.01,
+                                              cil = 2,
+                                              ciu = 10),
+                            type = 2,
+                            AR = FALSE) |> setDT()
+test_data_2_ar <- fix_predictor_and_response(crp_cs_data)
 test_data_2_mor <- test_data_2_ar[, fun_of_replicates(.SD), by = comparison]
 
+# Output from smoothing_spline()
 ss_fit_1 <- smoothing_spline(data = test_data_1, df = 3)
 ss_fit_2 <- smoothing_spline(data = test_data_1, df = 5)
 ss_fit_3 <- smoothing_spline(data = test_data_1, df = 7.5)
 
+# Output from smooth.spline()
 ss_fit_1_ref <- smooth.spline(x = test_data_1$MP_B, test_data_1$MP_A, df = 3, keep.stuff = TRUE, all.knots = c(0, ss_fit_1$interior_knots, 1), cv = TRUE)
 ss_fit_2_ref <- smooth.spline(x = test_data_1$MP_B, test_data_1$MP_A, df = 5, keep.stuff = TRUE, all.knots = c(0, ss_fit_2$interior_knots, 1), cv = TRUE)
 ss_fit_3_ref <- smooth.spline(x = test_data_1$MP_B, test_data_1$MP_A, df = 7.5, keep.stuff = TRUE, , all.knots = c(0, ss_fit_3$interior_knots, 1), cv = TRUE)
 
+# Reconstruct matrices from smooth.spline()
 ss_fit_1_ref_matrices <- get_matrices(ss_fit_1_ref$auxM)
 ss_fit_2_ref_matrices <- get_matrices(ss_fit_2_ref$auxM)
 ss_fit_3_ref_matrices <- get_matrices(ss_fit_3_ref$auxM)
+
 
 test_that("Check if df corresponds with the given", {
   expect_true(object = abs(ss_fit_1$df - 3) < 1e-3)

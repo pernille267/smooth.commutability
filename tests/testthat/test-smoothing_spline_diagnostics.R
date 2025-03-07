@@ -1,5 +1,5 @@
 library(fasteqa)
-suppressWarnings(library(data.table))
+library(data.table)
 library(testthat)
 
 # Testing on "real data"

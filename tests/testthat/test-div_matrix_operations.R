@@ -7,7 +7,7 @@ set.seed(99)
 
 # Test data
 test_parameters <- list(n = 25, R = 3, cvx = 0.01, cvy = 0.01, cil = 2, ciu = 10)
-test_data <- simulate_eqa_data2(parameters = test_parameters, type = 2, AR = FALSE)
+test_data <- sim_eqa_data(parameters = test_parameters, type = 2, AR = FALSE)
 test_ss <- smoothing_spline(test_data, df = 4)
 
 # Testing calculate_r() method

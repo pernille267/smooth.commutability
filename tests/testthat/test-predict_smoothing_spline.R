@@ -1,46 +1,26 @@
 library(fasteqa)
-suppressWarnings(library(data.table))
+library(data.table)
 library(testthat)
 
-simulate_eq_data <- function(x = 5, R = 3, cvx = 0.01, cvy = 0.01, cil = 2, ciu = 10, type = 2, beta0 = 0, beta1 = 1){
-  mu_tau <- mean(c(cil, ciu))
-  varh <- (mu_tau * cvx)^2 / R
-  varv <- (mu_tau * cvy)^2 / R
-  m <- length(x)
-  h <- rnorm(n = m, mean = 0, sd = sqrt(varh))
-  v <- rnorm(n = m, mean = 0, sd = sqrt(varv))
-  if(type == 1){
-    ny <- x + 0.90 * sin(0.40 * x^1.06) + v
-    nx <- x + h
-  }
-  else if(type == 2){
-    ny <- x + 0.05 * exp(0.16 * x^1.35) + v
-    nx <- x + h
-  }
-  else if(type == 3){
-    ny <- x - exp(-0.5 * (x - 1.5)^2 / 4) + v
-    nx <- x + h
-  }
-  else{
-    ny <- beta0 + beta1 * x + v
-    nx <- x + h
-  }
-  sampleid <- paste0("EQA_", 1:m)
-  return(data.table(SampleID = sampleid,
-                    MP_A = ny,
-                    MP_B = nx))
-}
-
-
+# Reproducibility
 set.seed(99)
 
-test_data_cs_1 <- simulate_eqa_data2(parameters = list(n = 25, R = 3, cvx = 0.01, cvy = 0.01, cve = 0, cil = 2, ciu = 10), type = 1, AR = FALSE) |> setDT()
-test_data_cs_2 <- simulate_eqa_data2(parameters = list(n = 25, R = 3, cvx = 0.01, cvy = 0.01, cve = 0, cil = 2, ciu = 10), type = 2, AR = FALSE) |> setDT()
-test_data_cs_3 <- simulate_eqa_data2(parameters = list(n = 25, R = 3, cvx = 0.01, cvy = 0.01, cve = 0, cil = 2, ciu = 10), type = 3, AR = FALSE) |> setDT()
+# Parameters used
+cs_parameters <- list(n = 25, R = 3, cvx = 0.01, cvy = 0.01, cil = 2, ciu = 10)
+eq_parameters <- c(list(obs_tau = c(1.5, 7, 11)), cs_parameters)
 
-test_data_eq_1 <- simulate_eq_data(x = c(1.5, 7, 11), type = 1)
-test_data_eq_2 <- simulate_eq_data(x = c(1.5, 7, 11), type = 2)
-test_data_eq_3 <- simulate_eq_data(x = c(1.5, 7, 11), type = 3)
+# Simulated clinical sample data
+test_data_cs_1 <- sim_eqa_data(parameters = cs_parameters, type = 1) |> setDT()
+test_data_cs_2 <- sim_eqa_data(parameters = cs_parameters, type = 2) |> setDT()
+test_data_cs_3 <- sim_eqa_data(parameters = cs_parameters, type = 3) |> setDT()
+
+# Simulated evaluated material data
+test_data_eq_1 <- sim_eqa_data(parameters = eq_parameters, type = 1) |> setDT()
+test_data_eq_2 <- sim_eqa_data(parameters = eq_parameters, type = 2) |> setDT()
+test_data_eq_3 <- sim_eqa_data(parameters = eq_parameters, type = 3) |> setDT()
+test_data_eq_1[, SampleID := paste0("EQAM_", SampleID)]
+test_data_eq_2[, SampleID := paste0("EQAM_", SampleID)]
+test_data_eq_3[, SampleID := paste0("EQAM_", SampleID)]
 
 ss_fit_1 <- smoothing_spline(data = test_data_cs_1, df = 5)
 ss_fit_2 <- smoothing_spline(data = test_data_cs_2, df = 5)
@@ -83,26 +63,44 @@ test_that("Check if OLS prediction intervals are wider", {
   expect_true(object = all(ols_pred_3$upr - ols_pred_3$lwr > ss_pred_3$upr - ss_pred_3$lwr))
 })
 
+# Check if order is kept
 
+# Draw from sample not necessarily in increasing order
 xs <- sample(x = c(1.5, 2:10, 10.5, 11), size = 12, replace = F)
-test_data_eq_4 <- simulate_eq_data(x = xs, type = 3)
+
+# Update eq_parameters
+eq_parameters$obs_tau <- xs
+
+# Simulate evaluated material data
+test_data_eq_4 <- sim_eqa_data(parameters = eq_parameters, type = 3) |> setDT()
+test_data_eq_4[, SampleID := paste0("EQAM_", SampleID)]
+
+# Prediction
 ss_pred_4 <- predict_smoothing_spline(data = test_data_cs_3, new_data = test_data_eq_4, df = 5, level = 0.95, rounding = 6)
 
 test_that("Check ordering of output without NA values", {
   expect_true(object = all(order(test_data_eq_4$MP_B) == order(ss_pred_4$MP_B)))
 })
 
+# Assign three of the values as NA values
 test_data_eq_5 <- test_data_eq_4
 na_ids <- sample(1:12, size = 3, replace = FALSE)
 test_data_eq_5$MP_B[na_ids] <- NA
 
+# Prediction
 ss_pred_5 <- predict_smoothing_spline(data = test_data_cs_3, new_data = test_data_eq_5)
 
 test_that("Check ordering of output with NA values", {
   expect_true(object = all(order(test_data_eq_5$MP_A) == order(ss_pred_5$MP_A)))
 })
 
-test_data_eq_6 <- simulate_eq_data(x = seq(from = 2, to = 10, length.out = 1e3), type = 2)
+# Update eq_parameters
+eq_parameters$obs_tau <- seq(from = 2, to = 10, length.out = 1e3)
+
+# Simulate evaluated material data
+test_data_eq_6 <- sim_eqa_data(parameters = eq_parameters, type = 2)
+
+# Remove SampleID
 test_data_eq_6$SampleID <- NULL
 
 test_that("Check if runs if SampleID missing",{
@@ -119,5 +117,19 @@ test_that("Check stuff when SampleID missing",{
   expect_true(all(as.integer(ss_pred_6$MP_A > ss_pred_6$lwr & ss_pred_6$MP_A < ss_pred_6$upr) == ss_pred_6$inside))
   expect_true(all(abs(ss_pred_6$prediction - ss_pred_6_ref) < 0.01))
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -20,6 +20,7 @@ get_smoothing_parameters(
 )
 }
 \description{
-This function is used internally for smoothing parameters of \code{smoothing_spline()}.
+This function is used internally for smoothing parameters of
+\code{smoothing_spline()}.
 }
 \keyword{internal}

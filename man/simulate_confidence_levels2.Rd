@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulate_confidence_levels2.R
 \name{simulate_confidence_levels2}
 \alias{simulate_confidence_levels2}
-\title{Simulate empirical confidence levels for a set of parameters}
+\title{Simulate Empirical Confidence Levels}
 \usage{
 simulate_confidence_levels2(
   parameters,
@@ -21,70 +21,143 @@ simulate_confidence_levels2(
 )
 }
 \arguments{
-\item{parameters}{A \code{list}, \code{data.table} or \code{data.frame} with column names representing the parameters to be included in the simulations.
-Must in general include \code{n}, \code{R}, \code{cvx}, \code{cvy}, and \code{df} or \code{df_max}. If \code{type} is included, data will
-be simulated from custom non-linear functions. Note that \code{cil} and \code{ciu} also must be included if \code{type} is included.}
+\item{parameters}{A \code{list}, \code{data.table} or \code{data.frame}.
+The parameters and corresponding values to be used in
+the simulation. Either \code{df} or \code{df_max}, must
+be included. See \code{sim_eqa_data()} for other
+parameters.}
 
-\item{N}{An \code{integer} that represents the number of replicated inside checks.}
+\item{N}{An \code{integer}. The desired number of replicated inside checks.}
 
-\item{m}{An \code{integer} larger than or equal to \code{1L}. How many external quality assessment materials should be simulated?}
+\item{m}{An \code{integer}. Must be larger than or equal to \code{1L}.
+The desired number of evaluated materials to simulate. Defaults to
+\code{1L}.}
 
-\item{level}{A \code{double} that is larger than 0, but smaller than 1. Represents the confidence level of the estimated prediction intervals for the smoothing spline fit.}
+\item{level}{A \code{double}. Must be between 0 and 1. The desired nominal
+confidence level for the approximate prediction intervals.
+Defaults to \code{0.95} (\eqn{95\%}).}
 
-\item{extrapolate_ok}{A \code{logical} value. If \code{TRUE}, test data can be simulated beyond the empirical range of the clinical sample data.}
+\item{extrapolate_ok}{A non-missing \code{logical} value. If \code{TRUE},
+simulated evaluated material data are allowed to
+produce measurements beyond the support of the
+clinical samples IVD-MD measurements. Defaults to
+\code{FALSE}.}
 
-\item{shift}{A \code{logical} value. If \code{TRUE}, the roles of \code{MP_A} and \code{MP_B} shift if \code{lambda < 0.5}.}
+\item{shift}{A non-missing \code{logical} value. If \code{TRUE}, the roles
+of \code{MP_A} and \code{MP_B} are allowed to shift. Can only
+happen if \code{lambda < 0.5}. Defaults to \code{FALSE}.}
 
-\item{attempt_fast}{A \code{logical} value. If \code{TRUE}, the predictions are attempted speeded up.}
+\item{attempt_fast}{A non-missing \code{logical} value. If \code{TRUE}, the
+\code{smooth.spline()} is used to make predictions.}
 
-\item{include_deming}{A \code{logical} value. If \code{TRUE}, the inside rates based on Deming regression are also included.}
+\item{include_deming}{A non-missing \code{logical} value. If \code{TRUE},
+the inside prediction interval indicator is also
+calculated for \code{fg} Deming regression. Defaults
+to \code{FALSE}.}
 
-\item{include_ci}{A \code{logical} value. If \code{TRUE}, approximate confidence intervals for are calculated.}
+\item{include_ci}{A non-missing \code{logical} value. If \code{TRUE},
+approximate confidence intervals for \eqn{\theta}
+(theoretical confidence level) are included in the output.}
 
-\item{parallel}{A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}). If set to \code{TRUE}, simulations are done on multiple cores on your local machine for the duration of the function call.}
+\item{parallel}{A non-missing \code{logical} value. If \code{TRUE},
+simulations are done in parallel. May reduce runtime.}
 
-\item{max_cores}{An \code{integer} value between \code{2} and the number of cores you have on your computer. If you wish to use fewer cores than is on your computer, you should specify this here.}
+\item{max_cores}{An \code{integer}. Must be between \code{2} and the number
+of cores you have on your computer. If fewer cores than
+the total number of cores on your computer is desired,
+specify this here.}
 
-\item{seed}{An \code{integer} value. If you wish to set a seed for reproducibility, set it here. If you do not want reproducibility, set this to \code{NULL}.}
+\item{seed}{An \code{integer}. Ensuring reproducibility even if
+\code{parallel = TRUE}. If reproducibility is unimportant, set
+this to \code{NULL}.}
 
-\item{percent}{A non-missing \code{logical} value (\code{TRUE} / \code{FALSE}). If set to \code{TRUE}, all numbers that are possible to present as percentages are presented as percentages.}
+\item{percent}{A non-missing \code{logical} value. If \code{TRUE}, all
+results possible to present as percentages are presented as
+percentages.}
 }
 \value{
-A \code{data.table}.
+A \code{data.table}. The approximated confidence level for each unique
+combination of parameters in \code{parameters}. The resulting
+\code{data.table} is expected to have
+\code{N} \eqn{\times} \code{m} \eqn{\times} \code{length(obs_tau)} rows.
 }
 \description{
-Simulates Monte Carlo approximated empirical confidence level, \eqn{\theta}
-based on every unique combination of parameters found in \code{parameters},
-based on \code{N} inside checks.
+Approximates the theoretical confidence level, \eqn{\theta},
+using Monte Carlo simulation for every unique parameter combination in
+\code{parameters}. These approximations are based on \code{N} inside checks
+for each parameter combination.
 }
 \details{
 The approximate smoothing spline prediction interval for a new observation
 \eqn{y_{n+1}} given the new predictor value \eqn{x_{n+1}} and a fitted smoothed
-spline \eqn{\hat{f}} is defined to be:
+spline \eqn{\hat{f}} is:
 
-\eqn{PI_T(y_{n+1} | x_{n+1}) \approx \hat{f}(x_{n+1}) \pm t_{n - \mathrm{df}(c), 1 - \alpha/2} \sqrt{\hat{\sigma} + \widehat{\mathrm{Var}}(\hat{f}(x_{n+1}))}}.
+\eqn{PI_T(y_{n+1} | x_{n+1}) \approx \hat{f}(x_{n+1}) \pm
+t_{n - \mathrm{df}(c), 1 - \alpha/2}
+\sqrt{\hat{\sigma} + \widehat{\mathrm{Var}}(\hat{f}(x_{n+1}))}}.
 
-This function repeats the following steps \code{N} times for each unique parameter
-combination in \code{parameters}:
+This function repeats the following steps \code{N} times for each unique
+parameter combination:
 \enumerate{
  \item Simulate \eqn{(x_i, y_i)} for \eqn{i = 1, 2, \ldots, n, n+1}
- \item Fit a smoothing spline using \eqn{(x_i, y_i)} for \eqn{i = 1, 2, \ldots, n}
+ \item Fit a smoothing spline using \eqn{(x_i, y_i)} for
+       \eqn{i = 1, 2, \ldots, n}
  \item Calculate \eqn{z_j = \mathbb{I}(y_{n+1} \in PI_T(y_{n+1} | x_{n+1}))}
 }
-The empirical confidence level is calculated using \eqn{\hat{\theta} = \frac{\sum_{j=1}^{N}z_j}{N}}.
-Assuming that \eqn{z_j \sim \mathrm{Bernoulli}(\theta)}, an asymptotically efficient estimator
-for the variance of \eqn{\hat{\theta}} is
+The empirical confidence level is calculated using
+\eqn{\hat{\theta} = \frac{\sum_{j=1}^{N}z_j}{N}}.
+Assuming that \eqn{z_j \sim \mathrm{Bernoulli}(\theta)}, an asymptotically
+efficient estimator for the variance of \eqn{\hat{\theta}} is
 
-\eqn{\widehat{\mathrm{Var}}[\hat{\theta}] = \frac{\hat{\theta}(1-\hat{\theta})}{N}}
+\eqn{\widehat{\mathrm{Var}}[\hat{\theta}] =
+\frac{\hat{\theta}(1-\hat{\theta})}{N}}
 
-The corresponding standard error is denoted as \code{sem} in the output of this function.
-An asymptotic \eqn{95\%} confidence interval for \eqn{\theta} is
+The corresponding standard error is denoted as \code{sem} in the output of
+this function. An asymptotic \eqn{95\%} confidence interval for \eqn{\theta}
+is
 
 \eqn{KI_\theta = \hat{\theta} \pm 1.96 \cdot \mathrm{sem}}
 
-This asymptotic confidence interval is only calculated if \code{include_ci} is
-set to \code{TRUE}.
+This asymptotic confidence interval is only calculated if
+\code{include_ci = TRUE}.
+
+General note: Any function named \code{simulate_***}, is generally not
+intended to be used by end-users. They are used in research and validity
+testing.
 }
 \examples{
-print(1)
+# Required packages
+library(fasteqa)
+library(data.table)
+
+# Simulation parameters
+n <- c(25, 40)
+R <- c(3, 4)
+cvx <- 0.01
+cvy <- 0.01
+type <- c(1, 2, 3)
+df_max <- 7.5
+tau_obs <- c(3, 6, 9)
+parameters <- CJ(n, R, cvx, cvy, df_max, type, tau_obs)
+
+# Number of unique parameter combinations
+print(nrow(parameters))
+
+# Approximate confidence levels for smoothing spline prediction intervals
+# Takes approximately one minute to run
+output <- simulate_confidence_levels2(parameters = parameters,
+                                      N = 1e3,
+                                      m = 1,
+                                      level = 0.95,
+                                      parallel = FALSE,
+                                      percent = TRUE)
+
+# Rounding results for cleaner output
+output$confidence_level <- round(output$confidence_level, 2L)
+output$sem <- round(output$sem, 2L)
+
+# The output
+print(output)
+
+
 }

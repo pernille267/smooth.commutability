@@ -321,32 +321,6 @@ error_df2 <- function(sp, df, weights, B, BTB, Omega, r = 1.0) {
     .Call(`_smooth_commutability_error_df2`, sp, df, weights, B, BTB, Omega, r)
 }
 
-#' Calculate a Statistic for Each Sample
-#'
-#' @title Calculate a Statistic for Each Sample
-#' @name fun_of_replicates2
-#'
-#' @param data A \code{data.table} or \code{list} object. Must contain
-#'        \code{SampleID}, \code{ReplicateID}, \code{MP_A} and \code{MP_B}.
-#' @param fun A \code{character} string. Which statistic is to be calculated for
-#'        each SampleID. Possible choices include \code{mean}, \code{var} (variance),
-#'        \code{sd} (standard deviaton), \code{cv} (coefficient of variation),
-#'        \code{median}, \code{min} (minimum) and \code{max} (maximum).
-#'
-#' @description Calculates a chosen statistic over the replicates.
-#'
-#' @details This function handles NA-values automatically.
-#'
-#' @return A \code{list} with elements \code{SampleID}, \code{MP_A} and \code{MP_B}.
-#'         \code{MP_A} and \code{MP_B} contains the sample-wise statistics.
-#'
-#' @examples \dontrun{
-#'   print(1)
-#' }
-fun_of_replicates2 <- function(data, fun = "mean") {
-    .Call(`_smooth_commutability_fun_of_replicates2`, data, fun)
-}
-
 #' Checks if \eqn{y_{n+j}} for \eqn{j = 1, \ldots, m} are inside Deming prediction intervals.
 #'
 #' @title Check Whether New Observations Are Inside Deming Prediction Intervals
@@ -434,33 +408,42 @@ sigma_h_squared_deming2 <- function(data, lambda = 1) {
     .Call(`_smooth_commutability_sigma_h_squared_deming2`, data, lambda)
 }
 
-#' Estimate weighted local average curve.
-#'
 #' @title Estimate Weighted Local-Average Curve
 #' @name local_average
 #'
-#' @param x A \code{numeric} vector. Must contain the stochastic process values
-#'        that are used in estimating the weighted local average curve.
-#' @param weights A \code{numeric} vector. Must contain weights for each of the stochastic
-#'        process values. Set all weights to \code{1} to bypass weighting.
-#' @param window A \code{integer} value. The window-width for estimating averages
-#'        at each point. See details.
+#' @param x A \code{numeric} vector. Must contain the stochastic process
+#'          values that are used in estimating the weighted local average
+#'          curve.
+#' @param weights A \code{numeric} vector. Must contain weights for each of
+#'                the stochastic process values. If all equal to \code{1},
+#'                weighting is bypassed.
+#' @param window An \code{integer}. The width of the moving window.
+#'               See details.
+#'
+#' @description
+#' Estimates the weighted local-average for a stochastic process \code{x}.
 #'
 #' @details
-#' Calculates the estimated weighted local-averages for the sample \eqn{\lbrace x_i \rbrace_{i=1}^{N}}
-#' and weights \eqn{\lbrace w_i \rbrace_{i=1}^{N}}.
-#' We assume the following model:
+#' Calculates the estimated weighted local-averages for the stochastic
+#' process values \eqn{\lbrace x_i \rbrace_{i=1}^{N}}. The estimation
+#' utilizes weights \eqn{\lbrace w_i \rbrace_{i=1}^{N}}. We assume the
+#' following model:
 #'
 #' \eqn{x_i = f(x_i) + \epsilon_i}.
 #'
-#' We attempt to estimate the signal \eqn{f(x_i)}, using a weighted local-average model:
+#' The goal is to extract the signal \eqn{f(x_i)}, using a weighted
+#' local-average model:
 #'
-#' \eqn{\hat{f}(x_i) = \frac{1}{w_i \cdot (\min\lbrace N, i + \Delta \rbrace - \max\lbrace 1, i - \Delta \rbrace)} \cdot \sum_{j = \max\lbrace 1, i - \Delta \rbrace}^{\min\lbrace N, i + \Delta \rbrace} x_j}
+#' \eqn{\hat{f}(x_i) = \frac{1}
+#' {w_i \cdot (\min\lbrace N, i + \Delta \rbrace - \max\lbrace 1, i - \Delta
+#' \rbrace)} \cdot \sum_{j = \max\lbrace 1, i - \Delta \rbrace}^{\min\lbrace
+#' N, i + \Delta \rbrace} x_j}
 #'
-#' Here, \eqn{\Delta} is half of the value given in \code{window}. \code{NA} values are allowed,
-#' and will be silently removed if present.
+#' Here, \eqn{\Delta} is \eqn{0.5 \times} \code{window}. Note: \code{NA}
+#' values are allowed in \code{x}, and will be silently removed if present.
 #'
-#' @return A \code{numeric} vector of local-average estimates.
+#' @return
+#' A \code{numeric} vector. The weighted local-average estimates of \code{x}.
 #'
 #' @examples \dontrun{
 #'   print(1)
@@ -580,332 +563,5 @@ reconstruct_4_band_matrix <- function(x) {
 #' }
 get_matrices <- function(auxM) {
     .Call(`_smooth_commutability_get_matrices`, auxM)
-}
-
-#' Calculate imprecision point estimates of measurements in a given IVD-MD comparison
-#'
-#' @title Calculate imprecision point estimates of measurements in a given IVD-MD comparison
-#' @name global_precision_estimates2
-#'
-#' @param data \code{list} or \code{data.table}. Must contain the following variables:
-#' \itemize{
-#'   \item \code{SampleID:} Sample identifiers. Must be a \code{character} vector.
-#'   \item \code{ReplicateID:} Replicate measurement identifiers within samples. Must be \code{character} vector.
-#'   \item \code{MP_A:} Measurement results for the IVD-MD used as response variable.
-#'   \item \code{MP_B:} Measurement results for the IVD-MD used as predictor variable.
-#' }
-#'
-#' @details
-#' Calculates five relevant global imprecision estimates. The term global is
-#' used because these imprecision estimates are based on the whole dataset.
-#' These five imprecision estimates are calculated:
-#' \itemize{
-#'   \item \code{Var_A:} Pooled variance of all sample-variances based on \code{MP_A}
-#'   \item \code{Var_B:} Pooled variance of all sample-variances based on \code{MP_B}
-#'   \item \code{CV_A:} CV estimate based on Var_A and the grand mean of all measurements from \code{MP_A}
-#'   \item \code{CV_B:} CV estimate based on Var_B and the grand mean of all measurements from \code{MP_B}
-#'   \item \code{lambda:} Ratio of pooled variances \code{Var_A} and \code{Var_B}
-#' }
-#' Coefficient of Variation (CV) values \code{CV_A} and \code{CV_B} can also be represented as percentages.
-#' To convert to percentage values, multiply their raw results by 100.
-#'
-#' @return A \code{list} of length \code{5} with the following point imprecision estimates:
-#'         \code{Var_A}, \code{Var_B}, \code{CV_A}, \code{CV_B} and \code{lambda}.
-#'         See details for more information on these statistics.
-#'
-#' @examples \dontrun{
-#'   library(data.table)
-#'   data <- simulate_eqa_data2(list(n = 25, R = 3, cvx = 0.02, cvy = 0.3), AR = TRUE)
-#'   data$SampleID <- as.character(data$SampleID)
-#'   data$ReplicateID <- as.character(data$ReplicateID)
-#'   print(global_prcision_estimates2(data = data) |> as.data.table())
-#' }
-NULL
-
-#' Resample clustered EQA clinical sample data
-#'
-#' @title Resample clustered EQA clinical sample data
-#' @name resample_samples2
-#'
-#' @param data A \code{list} or a \code{data.table}. Must contain \code{SampleID},
-#'        \code{ReplicateID}, \code{MP_A} and \code{MP_B}. The ID variables \code{SampleID}
-#'        and \code{ReplicateID} must be of character type for the function to operate correctly.
-#'
-#' @details
-#' This function is a very efficient method to resample clinical sample data on sample-level.
-#' It is convenient to combine this function with \code{fasteqa} functions such as
-#' \itemize{
-#'   \item \code{global_precision_estimates()} to estimate bootstrap imprecision confidence intervals
-#'   \item \code{estimate_zeta()} to estimate bootstrap zeta confidence intervals
-#' }
-#' Alternatively it could be used to estimate \code{smooth.commutability} functions such as
-#' \itemize{
-#'   \item \code{estimate_zeta_ss()} to estimate bootstrap smoothing spline zeta confidence intervals
-#'   \item \code{estimate_df()} to estimate bootstrap smoothing spline df confidence intervals
-#' }
-#'
-#' @return A \code{list} containing the resampled EQA clinical sample data.
-#'
-#' @examples
-#' library(data.table)
-#' fictive_data <- simulate_eqa_data2(list(n = 25, R = 3, cvx = 0.01, cvy = 0.01), AR = TRUE)
-#' resampled_data <- resample_samples2(fictive_data)
-#' setDT(resampled_data)
-#' print(resampled_data)
-NULL
-
-#' Resample cluster statistics based on EQA clinical sample data
-#'
-#' @title Resample cluster statistics based on EQA clinical sample data
-#' @name resample_fun_of_samples
-#'
-#' @param data A \code{list} or a \code{data.table}. The mean-of-replicates
-#'        clinical sample data. Must contain \code{SampleID}, \code{MP_A} and \code{MP_B}.
-#'        The ID variable \code{SampleID} must be \code{character}.
-#'
-#' @details
-#' This function is a very efficient method to resample aggregated sample statistics
-#' based on clinical sample data.
-#'
-#' It is convenient to combine this function with \code{smooth.commutability} functions such as
-#' \itemize{
-#'   \item \code{predict_smoothing_splines()} to estimate inside rates for a IVD-MD comparison
-#'   \item \code{smoothing_spline()} to estimate bootstrap distribution of LOO-CV chosen effective degrees of freedom.
-#' }
-#'
-#' @return
-#' A \code{list} that contains the resampled \code{data}.
-#'
-#' @examples
-#' library(data.table)
-#' fictive_data <- simulate_eqa_data2(list(n = 25, R = 3, cvx = 0.01, cvy = 0.02))
-#' resampled_data <- resample_fun_of_samples(fictive_data)
-#' setDT(resampled_data)
-#' print(resampled_data)
-NULL
-
-#' Resample cluster statistics based on EQA clinical sample data for each IVD-MD comparison
-#'
-#' @title Resample cluster statistics based on EQA clinical sample data for each IVD-MD comparison
-#' @name resample_fun_of_samples_all
-#'
-#' @param data A \code{list} or a \code{data.table}. The mean-of-replicates (MOR)
-#'        clinical sample data. Must contain \code{comparison} \code{SampleID},
-#'        \code{MP_A} and \code{MP_B}. The ID variables \code{comparison}
-#'        and \code{SampleID} must be \code{character}.
-#'
-#' @details
-#' This function is a very efficient method to resample aggregated sample statistics
-#' based on clinical sample data grouped by IVD-MD \code{comparison}.
-#'
-#' It is convenient to combine this function with \code{smooth.commutability} functions such as
-#' \itemize{
-#'   \item \code{predict_smoothing_splines()} to estimate inside rates for each IVD-MD comparison
-#'   \item \code{smoothing_spline()} to estimate bootstrap distribution of LOO-CV chosen effective degrees of freedom.
-#' }
-#'
-#' @return
-#' A \code{list} that contains the resampled \code{data}.
-#'
-#' @examples
-#' library(data.table)
-#' fictive_data1 <- simulate_eqa_data2(list(n = 25, R = 3, cvx = 0.01, cvy = 0.02))
-#' fictive_data2 <- simulate_eqa_data2(list(n = 25, R = 3, cvx = 0.03, cvy = 0.02))
-#' fictive_data1$comparison <- rep("A - B", length(fictive_data1$MP_B))
-#' fictive_data2$comparison <- rep("A - C", length(fictive_data2$MP_B))
-#' fictive_data <- rbindlist(list(fictive_data1, fictive_data2))
-#' resampled_data <- resample_fun_of_samples_all(fictive_data)
-#' setDT(resampled_data)
-#' print(resampled_data)
-NULL
-
-#' Resample imprecision estimates based on clustered EQA clinical sample data
-#'
-#' @title Resample imprecision estimates based on clustered EQA clinical sample data
-#' @name resample_imprecision
-#'
-#' @param data A \code{list} or a \code{data.table}. Must contain \code{SampleID},
-#'        \code{ReplicateID}, \code{MP_A} and \code{MP_B}. The ID variables \code{SampleID}
-#'        and \code{ReplicateID} must be of character type for the function to operate correctly.
-#'
-#' @details
-#' This function is a very efficient method to resample repeatability measure estimates
-#' based on clinical sample data in \code{data}.
-#'
-#' @return A \code{list} containing the resampled imprecision.
-#'
-#' @examples
-#' library(data.table)
-#' fictive_data <- simulate_eqa_data2(list(n = 25, R = 3, cvx = 0.01, cvy = 0.01), AR = TRUE)
-#' impr <- replicate(n = 5, expr = resample_imprecision(fictive_data), simplify = FALSE)
-#' impr <- rbindlist(impr)
-#' print(impr)
-NULL
-
-global_precision_estimates2 <- function(data) {
-    .Call(`_smooth_commutability_global_precision_estimates2`, data)
-}
-
-resample_samples2 <- function(data) {
-    .Call(`_smooth_commutability_resample_samples2`, data)
-}
-
-resample_fun_of_samples <- function(data) {
-    .Call(`_smooth_commutability_resample_fun_of_samples`, data)
-}
-
-resample_fun_of_samples_all <- function(data) {
-    .Call(`_smooth_commutability_resample_fun_of_samples_all`, data)
-}
-
-resample_imprecision <- function(data) {
-    .Call(`_smooth_commutability_resample_imprecision`, data)
-}
-
-#' Simulation of EQA data based on study design and potential differences in non-selectivity
-#'
-#' @title Simulation of EQA data based on study design and potential differences in non-selectivity
-#' @name simulate_eqa_data2
-#'
-#' @param parameters A \code{list} of parametedrs used to simulate the EQA data. You must at least specify one parameter for this function to run. Except that one mandatory parameter, you may optionally choose the remaining of the parameters. These are the optimal parameters that you may include into the list:
-#' \itemize{
-#'   \item \code{n:} The number of samples.
-#'   \item \code{R:} The number of replicates on each sample.
-#'   \item \code{cvx:} The repeatability coefficient of variation for IVD-MD \code{MP_B}.
-#'   \item \code{cvy:} The repeatability coefficient of variation for IVD-MD \code{MP_A}.
-#'   \item \code{cil:} The lower bound of the concentration interval
-#'   \item \code{ciu:} The upper bound of the concentration interval
-#'   \item \code{dist:} The distribution to simulate latent variables from.
-#'                      Possbile choices include \code{unif} (uniform distribution, default),
-#'                      \code{norm} (normal distribution), \code{lst} (location-scale t-distribution),
-#'                      \code{lnorm} (log-normal distribution)
-#'   \item \code{df_tau:} The degrees of freedom for the 'lst' distribution if the distribution of latent variables are location-scale t-distributed ('lst'). Defaults to 5 if not otherwise is specified.
-#'   \item \code{eta:} The heteroscedasticity factor.
-#'   \item \code{eta0:} The proportion of base MS standard deviations.
-#'   \item \code{qpos:} Position of systematic differences in non-selectivity. 0 signify lower range and 1 signify upper range
-#'   \item \code{qran:} Interquantile range where systematic differences in non-selectivity should have its effect
-#'   \item \code{prop:} average proportion of clinical samples affected by random differences in non-selectivity
-#'   \item \code{mmax:} The maximum relocation magnitude in number of analytical SDs of y measurements. This assumes either prop or qpos and qran to be specified as well
-#'   \item \code{b0:} For systematic linear DINS between IVD-MDs. Intercept. Defaults to 0.
-#'   \item \code{b1:} For systematic linear DINS between IVD-MDs. Slope. Defaults to 1.
-#'   \item \code{c0:} For systematic linear non-selectivity in IVD-MD 1. Intercept. Defaults to 0.
-#'   \item \code{c1:} For systematic linear non-selectivity in IVD-MD 1. Slope. Defaults to 1.
-#'   \item \code{error_dist:} The distribution to simulate measurement error components from. Possible choices include 'norm' (normal distribution, default) and 'lt' (location t-distribution)
-#'   \item \code{dfx:} The degrees of freedom for the measurement error components in IVD-MD 1 if error_dist = 'lt'. Defaults to 5 if not otherwise is specified.
-#'   \item \code{dfy:} The degrees of freedom for the measurement error components in IVD-MD 2 if error_dist = 'lt'. Defaults to 5 if not otherwise is specified.
-#'   \item \code{md_method:} Method for simulation missing data. Possible choices include 'none' (no missing data is simulated, default), 'mar' (missing at random), 'mnar' (missing not at random) and 'marmnar' (missing both at random and not at random)
-#'   \item \code{mar_prob:} The probability (value between 0 and 1) of having a missing measurement. Only relevant if \code{md_method} is 'mar' or 'marmnar'. If not specified, but \code{md_method} = 'mar' or \code{md_method} = 'marmnar', it defaults to 0.05.
-#'   \item \code{mnar_threshold:} The lower bound threshold (a real value) for when a measurement should be missing. Only relevant if \code{md_method} is 'mnar' or 'marmnar'. If not specified, but \code{md_method} = 'mnar' or \code{md_method} = 'marmnar', it defaults to \code{cil}. Alternatively, if not specified, but \code{md_method} = 'mnar0' or \code{md_method} = 'marmnar0', it defaults to 0.
-#' }
-#' @param type \code{integer}. Set to \code{0} for default simulation of data. Set to \code{1}, \code{2} or \code{3} to simulate from custom built in non-linear functions.
-#' @param AR \code{logical}. If \code{TRUE}, data is simulated including replicated measurements. Otherwise, mean of replicated measurements are returned (MOR).
-#' @param include_parameters \code{logical}. If \code{TRUE}, the used parameters in the data simulation is saved and placed in a seperate list as part of the output.
-#' @param shift \code{logical}. If \code{TRUE}, the simulated data change roles. MP_A becomes MP_B, and MP_B becomes MP_A.
-#'
-#' @description Simulates a data set with n x R rows, and four columns. The two first columns are the base ID columns (\code{SampleID} and \code{ReplicateID}). The remaining columns are numeric columns holding measurement results from the two IVD-MDs in comparison (denoted 'MP_A' (y) and 'MP_B' (x)).
-#'              The form of the simulated data depends greatly on which parameters are specified in the the \code{parameters} argument.
-#' @details Simulates method comparison data for \code{n} samples (e.g., clinical samples, pools, external quality assessment samples, reference material samples), where each sample is measured \code{R} times (replicated measurements). In theory, we simulate from (x_ir, y_ir) where x_ir = f(tau_i) + h_ir and y_ir = g(f(tau_i)) + v_ir.
-#'          The form of f is specified through parameters \code{c0} and \code{c1}, whereas g is specified through numerous parameters such as \code{b0}, \code{b1}, \code{qpos}, \code{qran}, \code{mmax}, \code{prop}. tau_i is modelled through \code{cil}, \code{ciu}, \code{dist} and \code{df_tau}.
-#'          h_ir and v_ir are measurement error components modelled through \code{cvx}, \code{cvy}. \code{cvx}, \code{cvy} can be functions of \code{error_dist}, \code{dfx}, \code{dfy}, \code{eta} and \code{eta0}.
-#'          In order to convert the outputted list to a table, use either \code{as.data.frame()}, \code{as.data.table()}, \code{as.tibble()}. The most efficient way to convert is \code{setDT()} from the \code{data.table} package.
-#'
-#' @return A list where each list element is a column of the generated EQA data
-#'
-#' @examples \dontrun{
-#'
-#'   # Load data.table package from library
-#'   library(data.table)
-#'
-#'   # Simulate 25 clinical samples measured in triplicate affected by
-#'   # random differences in non-selectivity
-#'   parameters_css <- list(n = 25, R = 3, prop = 0.1, mmax = 5, cil = 25, ciu = 75)
-#'   simulated_css <- simulate_eqa_data(parameters = parameters_css)
-#'
-#'   # Simulate 3 external quality assessment material samples
-#'   # measured in duplicate not affected by differences in non-selectivity
-#'   parameters_eqams <- list(n = 3, R = 2, b0 = 0.1, b1 = 1.1)
-#'   simulated_eqams <- simulate_eqa_data(parameters = parameters_eqams)
-#'
-#'   # We can assume that tau_i ~ lst(df_tau = 10, mu_tau = 50, var_tau = 78.583)
-#'   parameters_css <- c(parameters_css, dist = "lst", df_tau = 10)
-#'   simulated_css_lst <- simulate_eqa_data(parameters = parameters_css)
-#'
-#'   # We can convert the list objects to data.table objects using setDT()
-#'   setDT(simulated_css)
-#'   setDT(simulated_eqams)
-#'   setDT(simulated_css_lst)
-#'
-#'   # Print results
-#'   print(simulated_css)
-#'   print(simulated_eqams)
-#'   print(simulated_css_lst)
-#'
-#' }
-#'
-NULL
-
-simulate_eqa_data2 <- function(parameters, type = 1L, AR = FALSE, include_parameters = FALSE, shift = FALSE) {
-    .Call(`_smooth_commutability_simulate_eqa_data2`, parameters, type, AR, include_parameters, shift)
-}
-
-#' Calculate sample skewness based on a numeric vector \code{x}.
-#'
-#' @title Calculate Sample Skewness of a Random Sample
-#' @name skewness
-#'
-#' @param x A \code{numeric} vector that is a random sample.
-#' @param na_rm A \code{logical} value. If \code{TRUE}, \code{NA}-values are
-#'        removed prior to calculation of sample skewness.
-#'
-#' @details
-#' Calculates the sample skewness of a random sample \eqn{\lbrace x_i \rbrace_{i=1}^{N}}.
-#' The sample skewness, attempts to estimate the theoretical skewness, \eqn{\gamma}, by using
-#' the following estimator
-#'
-#' \eqn{\hat{\gamma} = \frac{\sqrt{N(N-1)}}{N-2} \cdot \frac{\frac{1}{N}\sum_{i=1}^{N}(x_i - \overline{x})^3}{\Big[\frac{1}{N}\sum_{i=1}^{N}(x_i - \overline{x})^2\Big]^{1.5}}}.
-#'
-#' Note that this estimator will be biased if not \eqn{x_i \sim \mathrm{N}(\mu, \sigma^2)}.
-#'
-#' @return A \code{double} that is the calculated sample skewness.
-#'
-#' @examples \dontrun{
-#'   y <- rlnorm(n = 1000, meanlog = 0, sdlog = 0.25)
-#'   skew_y <- skewness(y)
-#'   print(skew_y)
-#' }
-skewness <- function(x, na_rm = TRUE) {
-    .Call(`_smooth_commutability_skewness`, x, na_rm)
-}
-
-#' Calculate sample excess kurtosis based on a numeric vector \code{x}.
-#'
-#' @title Calculate Sample Excess Kurtosis of a Random Sample
-#' @name kurtosis
-#'
-#' @param x A \code{numeric} vector that is a random sample.
-#' @param na_rm A \code{logical} value. If \code{TRUE}, \code{NA}-values are
-#'        removed prior to calculation of sample excess kurtosis.
-#'
-#' @details
-#' Calculates the sample excess kurtosis of a random sample \eqn{\lbrace x_i \rbrace_{i=1}^{N}}.
-#' The sample excess kurtosis, attempts to estimate the theoretical excess kurtosis, \eqn{\Kappa}, by using
-#' the following estimator
-#'
-#' \eqn{\hat{\Kappa} = \frac{N(N+1)}{(N-1)(N-2)(N-3)} \cdot \frac{\sum_{i=1}^{N}(x_i - \overline{x})^4}{s^4} - 3 \cdot \frac{(N-1)^2}{(N-2)(N-3)}}.
-#'
-#' Here, \eqn{s^2} is the unbiased sample variance.
-#' Note that this estimator will be biased if not \eqn{x_i \sim \mathrm{N}(\mu, \sigma^2)}.
-#' Note also that \eqn{\hat{\Kappa}} estimates the theoretical excess kurtosis and not the raw kurtosis.
-#' Therefore, one should add \eqn{3} to the output to get the estimated raw kurtosis.
-#'
-#' @return A \code{double} that is the calculated sample excess kurtosis.
-#'
-#' @examples \dontrun{
-#'   y <- rnorm(n = 1000)
-#'   kurt_y <- kurtosis(y)
-#'   print(kurt_y)
-#' }
-kurtosis <- function(x, na_rm = TRUE) {
-    .Call(`_smooth_commutability_kurtosis`, x, na_rm)
 }
 

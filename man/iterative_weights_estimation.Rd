@@ -12,9 +12,9 @@ iterative_weights_estimation(
   df,
   lambda,
   df_max,
-  tol = 0.5,
+  tol = 0.25,
   window = 10,
-  iter = 1
+  max_iter = 1
 )
 }
 \description{

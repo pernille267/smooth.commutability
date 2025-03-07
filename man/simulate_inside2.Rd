@@ -2,7 +2,8 @@
 % Please edit documentation in R/simulate_inside2.R
 \name{simulate_inside2}
 \alias{simulate_inside2}
-\title{Simulate Clinical Sample Data and External Quality Assessment Data and Check Whether Inside PI}
+\title{Simulate Clinical Sample Data and Evaluated Material Data and
+       Check Whether Inside PI(s)}
 \usage{
 simulate_inside2(
   parameters,
@@ -15,28 +16,91 @@ simulate_inside2(
 )
 }
 \arguments{
-\item{parameters}{A \code{list}, \code{data.table} or \code{data.frame} with column names representing the parameters to be included in the simulations.
-Must in general include \code{n}, \code{R}, \code{cvx}, \code{cvy}, and \code{df} or \code{df_max}. If \code{type} is included, data will
-be simulated from custom non-linear functions. Note that \code{cil} and \code{ciu} also must be included if \code{type} is included.}
+\item{parameters}{A \code{list}, \code{data.table} or \code{data.frame}.
+The parameters and corresponding values to be used in
+the simulation. Either \code{df} or \code{df_max}, must
+be included. See \code{sim_eqa_data()} for other
+parameters.}
 
-\item{m}{A \code{integer} larger than or equal to \code{1L}. How many external quality assessment materials should be simulated?}
+\item{m}{An \code{integer}. Must be larger than or equal to \code{1L}.
+The desired number of evaluated materials to simulate. Defaults to
+\code{1L}.}
 
-\item{level}{A \code{double} that is larger than 0, but smaller than 1. Represents the confidence level of the estimated prediction intervals for the smoothing spline fit.}
+\item{level}{A \code{double}. Must be between 0 and 1. The desired nominal
+confidence level for the approximate prediction intervals.
+Defaults to \code{0.95} (\eqn{95\%}).}
 
-\item{extrapolate_ok}{A \code{logical} value. If \code{TRUE}, test data can be simulated beyond the empirical range of the clinical sample data.}
+\item{extrapolate_ok}{A non-missing \code{logical} value. If \code{TRUE},
+simulated evaluated material data are allowed to
+produce measurements beyond the support of the
+clinical samples IVD-MD measurements. Defaults to
+\code{FALSE}.}
 
-\item{shift}{A \code{logical} value. If \code{TRUE}, the roles of \code{MP_A} and \code{MP_B} shift if \code{lambda < 0.5}.}
+\item{shift}{A non-missing \code{logical} value. If \code{TRUE}, the roles
+of \code{MP_A} and \code{MP_B} are allowed to shift. Can only
+happen if \code{lambda < 0.5}. Defaults to \code{FALSE}.}
 
-\item{attempt_fast}{A \code{logical} value. If \code{TRUE}, the predictions are attempted speeded up.}
+\item{attempt_fast}{A non-missing \code{logical} value. If \code{TRUE}, the
+\code{smooth.spline()} is used to make predictions.}
 
-\item{include_deming}{A \code{logical} value. If \code{TRUE}, the inside rates based on Deming regression are also included.}
+\item{include_deming}{A non-missing \code{logical} value. If \code{TRUE},
+the inside prediction interval indicator is also
+calculated for \code{fg} Deming regression. Defaults
+to \code{FALSE}.}
 }
 \value{
-An \code{integer} vector of length \code{m}.
+An \code{integer} vector. Is of length \code{2m} if
+\code{include_deming = TRUE}. Otherwise, length \code{m}.
 }
 \description{
-Simulate Clinical Sample Data and External Quality Assessment Data and Check Whether Inside PI
+Simulate Clinical Sample Data and Evaluated Material Data and
+       Check Whether Inside PI(s)
+}
+\details{
+Simulate a clinical sample dataset and an evaluated material dataset. The
+evaluated material are assumed to be commutable and will thus belong to the
+same population as the clinical samples. Then the model(s) and corresponding
+prediction interval(s) is(are) estimated. Finally, one check whether the
+simulated \code{MP_A} measurement(s) from the evaluated data is inside the
+prediction interval(s). If it(they) are, \code{inside = 1L}, and otherwise
+\code{inside = 0L}.
+
+If \code{include_deming = TRUE}, these checks are performed for both the
+Fuller & Gillard Deming regression model and the smoothing spline model.
+
+Note: This function is generally not used directly, but as part of the
+more comprehensive function \code{simulate_confidence_levels2()}.
+
+This function will never throw an error. If the invalid arguments are passed
+the output will instead produce \code{NA}.
+
+General note: Any function named \code{simulate_***}, is generally not
+intended to be used by end-users. They are used in research and validity
+testing.
 }
 \examples{
-print(1)
+
+# Required packagtes ..
+library(fasteqa)
+
+# Used parameters
+parameters <- list(n = 30,
+                   R = 3,
+                   cvx = 0.01,
+                   cvy = 0.01,
+                   df = 6,
+                   type = 2)
+
+# Simulate 100 inside indicator observations (only smoothing splines)
+ss_pi_insides <- replicate(n = 100,
+                           expr = simulate_inside2(parameters),
+                           simplify = TRUE)
+
+# Taking the mean produces the approximated confidence level for the
+# smoothing spline prediction intervals for the given parameters.
+ss_emp_cl_pi <- mean(ss_pi_insides, na.rm = TRUE)
+
+# The result
+print(ss_emp_cl_pi)
+
 }

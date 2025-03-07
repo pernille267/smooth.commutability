@@ -13,68 +13,141 @@ smoothing_spline(
   attempt_fast = FALSE,
   na_rm = TRUE,
   additional_parameters = list(method = "gcv", smudge = 1.2, c_star_min = 0.38,
-    c_star_max = 1.5, tol = 0.5, window = 10, iter = 1)
+    c_star_max = 1.5, tol = 0.25, window = 10, iter = 1)
 )
 }
 \arguments{
-\item{data}{A \code{data.table}, \code{data.frame} or \code{list} containing the measurements.
-It should include two specific variables named 'MP_B' and 'MP_A'.}
+\item{data}{A \code{data.table}, \code{data.frame} or \code{list}. Contains
+the IVD-MD clinical sample measurements. Must include:
+\itemize{
+   \item \code{MP_A: } A \code{numeric} vector. Contains the
+         measurements from IVD-MD \code{MP_A} (response).
+   \item \code{MP_B: } A \code{numeric} vector. Contains the
+         measurements from IVD-MD \code{MP_B} (predictor).
+}}
 
-\item{weights}{A \code{numeric} vector of length equal to the number of unique elements in \code{SampleID}.
-Default is \code{1}, which assigns equal weights to every observation.}
+\item{weights}{A \code{numeric} vector. Must have length equal to the length
+of both \code{MP_A} and \code{MP_B}. If \code{1}, every
+observation is assigned equal weight. Set to
+\code{'estimate'} to estimate the weights iteratively.}
 
-\item{df}{Optional; a \code{numeric} value specifying the degrees of freedom for the spline model.
-Should be between 2 and the number of clinical samples in \code{data}.
-The default value (\code{NULL}) triggers automatic selection using n-fold cross-validation.}
+\item{df}{A \code{double}. The desired degrees of freedom for the
+smoothing spline model. Must be between 2 and the number of
+observations in \code{data}. If \code{NULL} (default), the
+effective degrees of freedom is estimated automatically using
+cross-validation.}
 
-\item{lambda}{Optional; a non-negative \code{numeric} value specifying the penalty strength.
-The default (\code{NULL}) results in the function choosing an optimal value based on
-n-fold cross-validation to minimize the mean squared prediction error.}
+\item{lambda}{A non-negative \code{double}. The penalty parameter. If
+\code{NULL} (default), the penalty is estimated automatically
+using cross-validation.}
 
-\item{df_max}{A \code{numeric} value between 2 and the number of clinical samples in \code{data}.
-If n-fold cross-validation is used to obtain the optimal effective number of degrees of freedom, what is its upper limit.}
+\item{df_max}{A \code{double}. Must be between 2 and the number of
+observations in \code{data}. Defaults to 7.5, which is
+suitable in most method comparison applications.}
 
-\item{attempt_fast}{A \code{logical} value. If set to \code{TRUE}, the algorithm will attempt to utilize the \code{smoothing.spline()} method
-to derive \code{df} and \code{lambda}. It is generally not recommended to set this to \code{TRUE}.}
+\item{attempt_fast}{A non-missing \code{logical} value. If \code{TRUE},
+uses the \code{smoothing.spline()} method to do the
+heavy lifting. For end-users, there is little to no gain
+by setting this to \code{TRUE}.}
 
-\item{na_rm}{A \code{logical} value. If set to \code{TRUE}, NA values are removed before fitting the smoothing spline.}
+\item{na_rm}{A non-missing \code{logical} value. If \code{TRUE} (default),
+\code{NA} values are removed prior to fitting the smoothing
+spline.}
 
-\item{additional_parameters}{A \code{list} containing additional alternatives for the smoothing spline fit.}
+\item{additional_parameters}{A \code{list}. Additional control settings for
+the smoothing spline fitting.}
 }
 \value{
-A \code{list} containing the components of the smoothing spline fit, including:
+A \code{smoothing_spline} object: A \code{list} containing all components of
+the estimated smoothing spline model:
 \itemize{
-   \item \code{fitted}: Fitted values of the spline model.
-   \item \code{residuals}: Residuals from the fitted model.
-   \item \code{df}: Effective degrees of freedom used.
-   \item \code{lambda}: Penalty parameter used.
-   \item \code{sp}: Scale-invariant smoothing-paramater. Equivalent to \code{spar} in smooth.spline
-   \item \code{cv_crit}: Criterion value from cross-validation.
-   \item \code{var_eps}: Estimated variance of the model error terms.
-   \item \code{var_fit}: Estimated variance of the fitted values.
-   \item \code{coefficients}: Estimated coefficient vector of length \eqn{n + 4}.
-   \item \code{cov_beta}: Estimated coefficient covariance matrix of dims \eqn{(n + 4) \times (n+4)}.
-   \item \code{penalty_matrix}: Estimated penalty matrix of dims \eqn{(n + 4) \times (n+4)}.
-   \item \code{B}: The B-spline matrix evaluated at each \eqn{n} observation and \eqn{n + 4} knots.
-   \item \code{BTB}: The inner product of the B-spline matrix \code{B}.
-   \item \code{interior_knots}: The \eqn{n} inner knots (scaled to unit interval)
-   \item \code{knot_boundary}: The \eqn{2} boundary knots (scaled to unit interval). These will always be 0 and 1.
-   \item \code{weights}: The used weights for the smoothing spline fit.
-   \item \code{x}: The original predictor values sorted in increasing order.
-   \item \code{y}: The original response values sorted in increasing order.
+   \item \code{fitted: } A \code{numeric} vector. The fitted values of the
+                         estimated smoothing spline model.
+   \item \code{residuals: } A \code{numeric} vector. The residuals of the
+                            estimated smoothing spline model.
+   \item \code{derivatives: } A \code{numeric} vector. The derivatives of
+                              \code{fitted}.
+   \item \code{df: } A \code{double}. The effective degrees of freedom used
+                     to estimate the smoothing spline model.
+   \item \code{df_max: } A \code{double}. The upper threshold for \code{df}.
+                         If \code{df} is not selected using cross-validation
+                         this will be a \code{character} stirng.
+   \item \code{lambda: } A \code{double}. The smoothing parameter used to
+                         estimate the smoothing spline model.
+   \item \code{sp: } A \code{double}. The scale-invariant smoothing
+                     paramater. similar to \code{spar} in
+                     \code{smooth.spline()}.
+   \item \code{cv_crit: } A \code{double}. The criterion value from the
+                          cross-validation corresponding with \code{df},
+                          \code{lambda} and \code{sp}.
+   \item \code{method: } A \code{character} string. The method used to
+                         derive \code{lambda}.
+   \item \code{sp_search_interval: } A \code{numeric} vector of length 2.
+                                     The interval to search for the
+                                     \code{sp} minimizing the relevant
+                                     objective function.
+   \item \code{var_eps: } A \code{double}. The estimated variance of the
+                          model error terms.
+   \item \code{var_fit: } A \code{numeric} vector. The estimated variances of
+                          the \code{fitted}.
+   \item \code{coefficients: } A \code{numeric} vector of length \eqn{n + 4}.
+                               The estimated knot coefficients.
+   \item \code{cov_beta: } A \code{matrix} with dims
+                           \eqn{(n + 4) \times (n+4)}. The estimated
+                           covariance matrix for the knot coefficients.
+   \item \code{smoothing_matrix: } A \code{matrix} with dims
+                                   \eqn{n \times n}. The projection matrix
+                                   for the estimated smoothing spline model.
+   \item \code{penalty_matrix: } \code{matrix} with dims
+                                 \eqn{(n + 4) \times (n+4)}. The O'sullivan
+                                 penalty matrix.
+   \item \code{B: } \code{matrix} with dims
+                    \eqn{n \times (n+4)}. The B-spline matrix evaluated at
+                    each of the \eqn{n} observations and \eqn{n + 4} knots.
+   \item \code{BTB: } \code{matrix} with dims
+                      \eqn{(n+4) \times (n+4)}. The matrix product
+                      \eqn{\mathbf{B}^T \mathbf{B}}.
+   \item \code{interior_knots: } A \code{numeric} vector. The \eqn{n} inner
+                                 knots (scaled to unit interval)
+   \item \code{knot_boundary: } A \code{numeric} vector of length 2. The
+                                \eqn{2} boundary knots (scaled to unit
+                                interval). These will always be 0 and 1.
+   \item \code{n: } An \code{integer}. The number of valid pairs used to
+                    estimate the smoothing spline model.
+   \item \code{weights: } A \code{numeric} vector. The normalized weights
+                          used to estimate the smoothing spline model.
+   \item \code{u: } A \code{numeric} vector. The values of \code{MP_B},
+                    sorted in increasing values and scaled to the unit
+                    interval.
+   \item \code{x: } A \code{numeric}. The values of \code{MP_B}, but sorted
+                    in increasing order.
+   \item \code{y: } A \code{numeric}. The values of \code{MP_A}, but sorted
+                    according to the new order of the \code{MP_B} values.
 }
-
-        These components are often utilized in subsequent analyses and visualizations.
 }
 \description{
-This function fits a smoothing spline model to the provided data using an O'Sullivan penalty matrix.
-It is designed to work with various data types and offers flexibility in model tuning through degrees
-of freedom (`df`) and penalty parameter (`lambda`).
+Estimate the smoothing spline model based on \code{data} using the
+O'Sullivan penalty (see references). It is designed to work with various
+\code{data} types as long as \code{MP_A} and \code{MP_B} are found within
+and are \code{numeric} vectors of equal length.
 }
 \examples{
-# Example using a dataset with columns MP_B and MP_A
+# Loading packages
+library(smooth.commutability)
+library(fasteqa)
 library(data.table)
-data_example <- data.table(MP_B = 1:10, MP_A = rnorm(10))
-result <- smoothing_spline(data_example, df = 5)
-print(result$fitted)
+
+# Convert test_data to data.table
+test_data_dt <- as.data.table(test_data)
+
+# Calculate mean of replicates
+test_data_dt_mor <- test_data_dt[, fun_of_replicates(.SD)]
+
+# Estimate a weighted smoothing spline model using five degrees of freedom
+estimated_ss <- smoothing_spline(test_data_dt_mor,
+                                 weights = "estimate",
+                                 df = 5)
+
+# Summary of model estimate
+print.smoothing_spline(estimated_ss)
 }

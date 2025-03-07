@@ -411,7 +411,7 @@ smoothing_spline_diagnostics <- function(data, only_optimal_dfs = FALSE, weighte
   impr <- global_precision_estimates(data)
 
   # Calculate MOR data
-  mor_data <- fun_of_replicates2(data)
+  mor_data <- fun_of_replicates(data)
 
   # Remove NA-values if na_rm = TRUE
   if(isTRUE(na_rm)){

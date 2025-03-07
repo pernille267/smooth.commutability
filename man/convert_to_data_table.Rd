@@ -7,6 +7,7 @@
 convert_to_data_table(data)
 }
 \description{
-This function is used internally for converting different data types to data.table.
+This function is used internally for converting different data types to
+\code{data.table}.
 }
 \keyword{internal}

@@ -18,8 +18,8 @@ predict_smoothing_spline(
   attempt_fast = FALSE,
   include_prediction_variance = FALSE,
   rounding = 3L,
-  additional_parameters = list(method = "loocv", smudge = 1.4, c_star_min = 0.38,
-    c_star_max = 1.5, tol = 0.5, window = 10, iter = 1)
+  additional_parameters = list(method = "gcv", smudge = 1.2, c_star_min = 0.38,
+    c_star_max = 1.5, tol = 0.25, window = 10, iter = 1)
 )
 }
 \arguments{
