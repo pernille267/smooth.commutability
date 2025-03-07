@@ -664,7 +664,9 @@ smoothing_spline <- function(data,
     if(!weights_estimated){
       weights <- weights[weights_order]
     }
-    weights <- weights / mean(weights)
+    if(sum(weights) >= n * 1.01 | sum(weights) <= n * 0.99){
+      weights <- weights / mean(weights)
+    }
   }
 
   # Faster fitting of the smoothing spline, using smooth.spline() functionality
